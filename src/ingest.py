@@ -3,11 +3,13 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 import os
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Load embedding model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Initialize ChromaDB
-client = chromadb.PersistentClient(path="./chroma_db")
+client = chromadb.PersistentClient(path=os.path.join(ROOT_DIR, "chroma_db"))
 collection = client.get_or_create_collection(name="regulations")
 
 def chunk_text(text, chunk_size=500, overlap=50):
@@ -42,7 +44,10 @@ def ingest_pdf(pdf_path):
     
     print(f"✅ Done: {filename} — {len(chunks)} chunks stored")
 
-def ingest_all(folder_path="./regulations"):
+def ingest_all(folder_path=None):
+    if folder_path is None:
+        folder_path = os.path.join(ROOT_DIR, "regulations")
+
     files = [f for f in os.listdir(folder_path) if f.endswith(".pdf")]
     for file in files:
         ingest_pdf(os.path.join(folder_path, file))

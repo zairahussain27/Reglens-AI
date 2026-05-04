@@ -3,9 +3,16 @@ from groq import Groq
 from retriever import retrieve
 from dotenv import load_dotenv
 
-load_dotenv()
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(ROOT_DIR, ".env"))
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise RuntimeError(
+        "GROQ_API_KEY is not set. Add it to a `.env` file in the project root or export it in your environment."
+    )
+
+client = Groq(api_key=GROQ_API_KEY)
 
 SUPPORTED_INDUSTRIES = [
     "fintech", "digital payments", "lending", "nbfc", "msme",
