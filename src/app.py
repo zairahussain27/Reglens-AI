@@ -1,9 +1,6 @@
 import streamlit as st
-import sys
+import requests
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from compliance_engine import run_compliance_check
 
 # Page config
 st.set_page_config(
@@ -42,6 +39,7 @@ with st.sidebar:
     - 🏢 Companies Act 2013
     """)
     st.markdown("---")
+    api_url = st.text_input("Backend API URL", "http://localhost:8000")
     st.caption("ET AI Hackathon 2026 — PS5")
 
 # Main form
@@ -120,7 +118,10 @@ if st.button("🔍 Run Compliance Check", type="primary", use_container_width=Tr
 
         with st.spinner("🔍 Analyzing regulations for your business... This may take 15–30 seconds."):
             try:
-                result = run_compliance_check(business_profile)
+                endpoint = f"{api_url.rstrip('/')}/api/compliance-check"
+                response = requests.post(endpoint, json=business_profile, timeout=120)
+                response.raise_for_status()
+                result = response.json().get("result", "No result returned from backend.")
 
                 st.markdown("---")
                 st.markdown("## 📊 Compliance Analysis Report")
@@ -130,6 +131,8 @@ if st.button("🔍 Run Compliance Check", type="primary", use_container_width=Tr
                 st.success("✅ Analysis complete. This report is based on official government documents only.")
                 st.warning("⚠️ This tool provides AI-assisted guidance only. Consult a qualified compliance professional for legal decisions.")
 
+            except requests.exceptions.RequestException as re:
+                st.error(f"Backend request failed: {re}")
             except Exception as e:
                 st.error(f"Error running compliance check: {str(e)}")
 
