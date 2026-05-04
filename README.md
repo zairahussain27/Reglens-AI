@@ -19,12 +19,13 @@ with explainable, auditable reasoning.
 4. System outputs compliance checklist + risk level + plain-English explanation
 
 ## Tech Stack
-- **LLM:** Claude API (claude-sonnet-4-20250514)
+- **LLM:** Groq LLaMA 3.3 70B via Groq API
 - **Vector DB:** ChromaDB
 - **Embeddings:** sentence-transformers
-- **Backend:** Python + FastAPI
+- **Backend:** FastAPI
 - **Frontend:** Streamlit
 - **PDF Parsing:** pdfplumber
+- **Database:** SQLite for request audit logging
 
 ## Regulatory Coverage
 - RBI KYC Master Direction
@@ -40,9 +41,33 @@ with explainable, auditable reasoning.
 ```bash
 git clone https://github.com/YOUR_USERNAME/reglens-ai
 cd reglens-ai
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+# Create a .env file in the project root and set GROQ_API_KEY
+```
+
+### Run locally
+1. Start the backend:
+```bash
+uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+```
+2. Start the frontend:
+```bash
 streamlit run src/app.py
 ```
+
+### Run with Docker Compose
+```bash
+docker compose up --build
+```
+
+## Notes
+- Keep `.env` secret and out of source control.
+- The app requires a `GROQ_API_KEY` for Groq LLaMA 3.3.
+- The frontend sends requests to the backend at `http://localhost:8000` by default.
+
+## Notes
+- Keep `.env` secret and out of source control.
+- The app requires a `GROQ_API_KEY` for Groq LLaMA 3.3.
 
 ## Hackathon
 ET AI Hackathon 2026 — Problem Statement 5: Domain-Specialized AI Agents 
