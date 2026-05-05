@@ -1,6 +1,6 @@
 import os
 from groq import Groq
-from retriever import retrieve
+from .retriever import retrieve
 from dotenv import load_dotenv
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
