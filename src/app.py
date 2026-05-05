@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import os
+import json
+import re
 
 # Page config
 st.set_page_config(
@@ -8,6 +10,76 @@ st.set_page_config(
     page_icon="🔍",
     layout="wide"
 )
+
+# Initialize session state for checklists
+if "compliance_checklist" not in st.session_state:
+    st.session_state.compliance_checklist = {}
+if "risk_score" not in st.session_state:
+    st.session_state.risk_score = None
+if "regulations_by_category" not in st.session_state:
+    st.session_state.regulations_by_category = {}
+
+# Helper functions
+def parse_risk_level(result_text: str) -> int:
+    """Extract risk score from compliance result (0-100)"""
+    if "HIGH" in result_text.upper() or "CRITICAL" in result_text.upper():
+        return 80
+    elif "MEDIUM" in result_text.upper() or "MODERATE" in result_text.upper():
+        return 50
+    elif "LOW" in result_text.upper() or "MINIMAL" in result_text.upper():
+        return 20
+    else:
+        return 50  # default to medium
+
+
+def get_risk_gauge(score: int) -> str:
+    """Return emoji gauge based on risk score"""
+    if score < 30:
+        return "🟢 LOW RISK"
+    elif score < 70:
+        return "🟡 MEDIUM RISK"
+    else:
+        return "🔴 HIGH RISK"
+
+
+def extract_regulations_by_category(result_text: str) -> dict:
+    """Parse compliance result and categorize regulations"""
+    categories = {
+        "RBI": [],
+        "GST": [],
+        "MSME": [],
+        "SEBI": [],
+        "Companies Act": [],
+        "FEMA": [],
+        "Other": []
+    }
+    
+    lines = result_text.split("\n")
+    current_category = "Other"
+    
+    for line in lines:
+        line_upper = line.upper()
+        if "RBI" in line_upper:
+            current_category = "RBI"
+        elif "GST" in line_upper or "CGST" in line_upper:
+            current_category = "GST"
+        elif "MSME" in line_upper or "UDYAM" in line_upper:
+            current_category = "MSME"
+        elif "SEBI" in line_upper:
+            current_category = "SEBI"
+        elif "COMPANIES ACT" in line_upper or "MCA" in line_upper:
+            current_category = "Companies Act"
+        elif "FEMA" in line_upper:
+            current_category = "FEMA"
+        
+        # Add non-empty lines as regulations
+        if line.strip() and not any(cat in line_upper for cat in ["RBI", "GST", "MSME", "SEBI", "COMPANIES", "FEMA"]):
+            if len(line.strip()) > 10:  # Skip very short lines
+                categories[current_category].append(line.strip())
+    
+    # Remove empty categories
+    return {k: v for k, v in categories.items() if v}
+
 
 # Header
 st.markdown("""
@@ -123,10 +195,54 @@ if st.button("🔍 Run Compliance Check", type="primary", use_container_width=Tr
                 response.raise_for_status()
                 result = response.json().get("result", "No result returned from backend.")
 
+                st.session_state.risk_score = parse_risk_level(result)
+                st.session_state.regulations_by_category = extract_regulations_by_category(result)
+                
                 st.markdown("---")
                 st.markdown("## 📊 Compliance Analysis Report")
+                
+                # Risk Gauge Section
+                st.subheader("🎯 Compliance Risk Assessment")
+                risk_col1, risk_col2, risk_col3 = st.columns([1, 2, 1])
+                
+                with risk_col2:
+                    risk_gauge = get_risk_gauge(st.session_state.risk_score)
+                    st.metric(
+                        "Risk Level",
+                        f"{st.session_state.risk_score}%",
+                        delta=risk_gauge,
+                        delta_color="off"
+                    )
+                    
+                    # Progress bar visualization
+                    st.progress(st.session_state.risk_score / 100)
+                
+                st.markdown("---")
+                
+                # Categorized Regulations Section
+                if st.session_state.regulations_by_category:
+                    st.subheader("📋 Compliance Checklist by Category")
+                    
+                    for category, regulations in st.session_state.regulations_by_category.items():
+                        with st.expander(f"**{category}** ({len(regulations)} items)", expanded=True):
+                            for idx, regulation in enumerate(regulations[:5]):  # Show first 5
+                                checkbox_key = f"{category}_{idx}_{regulation[:20]}"
+                                checked = st.checkbox(
+                                    regulation[:100] + ("..." if len(regulation) > 100 else ""),
+                                    key=checkbox_key,
+                                    value=st.session_state.compliance_checklist.get(checkbox_key, False)
+                                )
+                                st.session_state.compliance_checklist[checkbox_key] = checked
+                            
+                            if len(regulations) > 5:
+                                st.caption(f"... and {len(regulations) - 5} more regulations")
+                
+                st.markdown("---")
+                
+                # Full Report
+                st.subheader("📄 Detailed Compliance Analysis")
                 st.markdown(result)
-
+                
                 st.markdown("---")
                 st.success("✅ Analysis complete. This report is based on official government documents only.")
                 st.warning("⚠️ This tool provides AI-assisted guidance only. Consult a qualified compliance professional for legal decisions.")
@@ -135,6 +251,26 @@ if st.button("🔍 Run Compliance Check", type="primary", use_container_width=Tr
                 st.error(f"Backend request failed: {re}")
             except Exception as e:
                 st.error(f"Error running compliance check: {str(e)}")
+
+# Display saved analysis if it exists
+if st.session_state.risk_score is not None:
+    st.markdown("---")
+    st.subheader("📈 Your Latest Compliance Dashboard")
+    
+    dashboard_col1, dashboard_col2 = st.columns([1, 2])
+    
+    with dashboard_col1:
+        risk_gauge = get_risk_gauge(st.session_state.risk_score)
+        st.metric("Risk Score", f"{st.session_state.risk_score}%")
+        st.write(risk_gauge)
+    
+    with dashboard_col2:
+        if st.session_state.compliance_checklist:
+            total_items = len(st.session_state.compliance_checklist)
+            checked_items = sum(st.session_state.compliance_checklist.values())
+            progress_pct = (checked_items / total_items * 100) if total_items > 0 else 0
+            st.metric("Progress", f"{int(progress_pct)}%", f"{checked_items}/{total_items} items")
+            st.progress(progress_pct / 100)
 
 # Footer
 st.markdown("---")
