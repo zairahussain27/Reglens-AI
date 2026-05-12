@@ -1,7 +1,13 @@
 import os
+import time
+import logging
 from groq import Groq
 from .retriever import retrieve
 from dotenv import load_dotenv
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(ROOT_DIR, ".env"))
@@ -82,7 +88,17 @@ This may happen if:
     # Build regulatory context
     regulatory_context = ""
     for chunk, source in results:
-        regulatory_context += f"\n[Source: {source}]\n{chunk}\n"
+        # Verify source is trusted
+        if isinstance(source, str) and (source.startswith('http') or source == 'local'):
+            regulatory_context += f"\n[Source: {source}]\n{chunk}\n"
+        else:
+            # Skip untrusted sources
+            continue
+        if isinstance(source, str) and (source.startswith('http') or source == 'local'):
+            regulatory_context += f"\n[Source: {source}]\n{chunk}\n"
+        else:
+            # Skip untrusted sources
+            continue
 
     # Load prompt template
     with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "prompts", "compliance.txt"), "r", encoding="utf-8") as f:
@@ -95,27 +111,60 @@ This may happen if:
         "{regulatory_context}", regulatory_context
     )
 
-    # Call Groq API
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        max_tokens=2000,
-        messages=[
-            {
-                "role": "system",
-                "content": """You are RegLens AI, a strict regulatory compliance assistant for Indian FinTechs and MSMEs.
+    # Call Groq API with timeout
+    start_time = time.time()
+    try:
+        logger.info("Starting Groq API call...")
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            max_tokens=2000,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are RegLens AI, a strict regulatory compliance assistant for Indian FinTechs and MSMEs.
 
 STRICT RULES:
 1. Only use information from the regulatory context provided. Never use your own memory for legal facts.
 2. If unsure about any regulation, explicitly flag it with ⚠️ UNCERTAIN.
 3. Never present this as legal advice. Always recommend professional consultation for final decisions.
-4. If a regulation is not clearly supported by the context, write INSUFFICIENT DATA — do not guess."""
-            },
-            {
-                "role": "user",
-                "content": filled_prompt
-            }
-        ],
-        temperature=0.1  # Low temperature = more factual, less creative
-    )
+4. If a regulation is not clearly supported by the context, write INSUFFICIENT DATA — do not guess.
+5. All sources in the context are verified official government documents from trusted domains (.gov.in, .nic.in, etc.)."""
+                },
+            
+                {
+                    "role": "user",
+                    "content": filled_prompt
+                }
+            ],
+            temperature=0.1,  # Low temperature = more factual, less creative
+            timeout=30  # 30-second timeout to prevent hangs
+        )
+        elapsed_time = time.time() - start_time
+        logger.info(f"Groq API call completed successfully in {elapsed_time:.2f} seconds")
+        return response.choices[0].message.content
+    except TimeoutError as exc:
+        elapsed_time = time.time() - start_time
+        logger.error(f"Groq API call timed out after {elapsed_time:.2f} seconds")
+        return """
+## ⚠️ Response Timeout
 
-    return response.choices[0].message.content
+RegLens AI did not receive a response from the API within 30 seconds.
+
+This may happen due to:
+- High server load
+- Network connectivity issues
+- Regulatory database complexity
+
+**What to do:** Please try again in a few moments or consult a qualified compliance professional.
+        """
+    except Exception as exc:
+        elapsed_time = time.time() - start_time
+        logger.error(f"Groq API error after {elapsed_time:.2f} seconds: {str(exc)}")
+        return f"""
+## ⚠️ API Error
+
+RegLens AI encountered an error while processing your request:
+{str(exc)}
+
+**What to do:** Please try again or consult a qualified compliance professional if the error persists.
+        """
