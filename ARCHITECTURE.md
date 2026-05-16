@@ -1,5 +1,4 @@
 # RegLens AI — Architecture Document
-### ET AI Hackathon 2026 | Problem Statement 5: Domain-Specialized AI with Compliance Guardrails
 
 ---
 
