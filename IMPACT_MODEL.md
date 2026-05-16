@@ -1,5 +1,4 @@
 # RegLens AI — Impact Model
-### ET AI Hackathon 2026 | Problem Statement 5
 
 ---
 
