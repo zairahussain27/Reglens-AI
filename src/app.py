@@ -77,9 +77,7 @@ st.markdown(
         background: #fcfcfd !important;
     }
 
-    .stTextArea textarea {
-        line-height: 1.45 !important;
-    }
+    
 
     div[data-testid="stForm"] hr {
         margin-top: 1rem !important;
@@ -88,11 +86,14 @@ st.markdown(
     /* SELECTBOX FIX */
 
     div[data-baseweb="select"] > div {
-        min-height: 44px !important;
+        height: 44px !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
         border-radius: 10px !important;
         border: 1px solid #d1d5db !important;
         background: white !important;
         display: flex !important;
+        justify-content: center !important;
         align-items: center !important;
         padding: 0 10px !important;
         box-shadow: none !important;
@@ -101,7 +102,9 @@ st.markdown(
     div[data-baseweb="select"] span {
         font-size: 14px !important;
         color: #111827 !important;
-        line-height: 1.2 !important;
+        line-height: normal !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
     /* DROPDOWN */
@@ -416,10 +419,16 @@ st.markdown(
         padding: 1rem 2rem 1.25rem;
     }
     section[data-testid="stSidebar"] {
-        width: 250px !important;
-        min-width: 250px !important;
+        width: auto !important;
+        max-width: 250px !important;
+        min-width: 0 !important;
         background: #ffffff;
         border-right: 1px solid #e5e7eb;
+        transition: width 180ms ease;
+    }
+    section[data-testid="stSidebar"][aria-expanded="false"] {
+        width: auto !important;
+        min-width: 72px !important;
     }
     section[data-testid="stSidebar"] > div {
         padding: 1.25rem 1rem;
@@ -1466,10 +1475,15 @@ def render_top_metric_cards() -> None:
 
 
 def render_business_profile_card(is_post_check: bool) -> None:
-    status_html = "<span class=\"rl-status-pill\">Submitted</span>" if is_post_check else ""
+    status_html = (
+        '<span class="rl-status-pill">Submitted</span>'
+        if is_post_check else ""
+    )
+
     intro_text = (
-        "Provide accurate details to get relevant compliance obligations." if not is_post_check
-        else "Your latest profile has been submitted and the report has been generated." 
+        "Provide accurate details to get relevant compliance obligations."
+        if not is_post_check
+        else "Your latest profile has been submitted and the report has been generated."
     )
 
     st.markdown(
@@ -1481,13 +1495,12 @@ def render_business_profile_card(is_post_check: bool) -> None:
                     <h2>Business Profile</h2>
                 </div>
                 {status_html}
-            </div>
-            <p class="rl-help">{escape(intro_text)}</p>
-        </div>
+
+            
+        
         """,
         unsafe_allow_html=True,
     )
-
 
 def risk_label(score: int | None) -> str:
     if score is None:
