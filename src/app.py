@@ -60,15 +60,74 @@ st.markdown(
         padding: 0.85rem 1.4rem;
         font-weight: 700;
     }
-    .stTextInput>div>div>input,
-    .stTextArea>div>div>textarea,
-    .stSelectbox>div>div>div>div {
-        border-radius: 14px;
-    }
+    
     @media (prefers-color-scheme: dark) {
         .app-card { box-shadow: 0 28px 60px rgba(0, 0, 0, 0.40); }
         .hero-card { background: rgba(10, 54, 108, 0.22); border-color: rgba(148, 163, 184, 0.20); }
         .section-label { color: #cbd5e1; }
+    }
+    label[data-testid="stWidgetLabel"] p {
+        font-size: 0.78rem !important;
+        letter-spacing: -0.1px;
+    }
+
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div {
+        background: #fcfcfd !important;
+    }
+
+    .stTextArea textarea {
+        line-height: 1.45 !important;
+    }
+
+    div[data-testid="stForm"] hr {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    /* SELECTBOX FIX */
+
+    div[data-baseweb="select"] > div {
+        min-height: 44px !important;
+        border-radius: 10px !important;
+        border: 1px solid #d1d5db !important;
+        background: white !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 10px !important;
+        box-shadow: none !important;
+    }
+
+    div[data-baseweb="select"] span {
+        font-size: 14px !important;
+        color: #111827 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* DROPDOWN */
+
+    ul[role="listbox"] {
+        border-radius: 10px !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+    }
+
+    /* TEXTAREA */
+
+    .stTextArea textarea {
+        border-radius: 10px !important;
+        padding-top: 12px !important;
+        line-height: 1.5 !important;
+        resize: none !important;
+    }
+
+    /* LABELS */
+
+    label[data-testid="stWidgetLabel"] p {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        margin-bottom: 6px !important;
+        color: #111827 !important;
     }
     </style>
     """,
@@ -576,9 +635,61 @@ st.markdown(
         font-size: 0.7rem;
         color: #6b7280;
     }
+    .top-card-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .rl-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        min-height: 128px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    .rl-stat-card .metric-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .rl-stat-card .metric-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #111827;
+    }
+    .rl-stat-card .metric-note {
+        font-size: 0.82rem;
+        color: #6b7280;
+    }
+    .rl-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: #ecfdf5;
+        color: #15803d;
+    }
+    .rl-status-pill.pending {
+        background: #ffedd5;
+        color: #b45309;
+    }
+    .rl-status-pill.upcoming {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
     .stButton > button {
-        width: auto !important;
-        min-width: 176px;
+        width: 100% !important;
+        min-width: 0;
         min-height: 2.45rem;
         border-radius: 8px;
         background: #2563eb !important;
@@ -592,25 +703,70 @@ st.markdown(
         background: #1d4ed8 !important;
         border-color: #1d4ed8 !important;
     }
-    .stTextInput input,
-    .stTextArea textarea,
-    div[data-baseweb="select"] > div {
+    /* Form styling */
+    div[data-testid="stForm"] {
         background: #ffffff !important;
-        border-color: #d1d5db !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        padding: 2rem 1.5rem !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+    /* Columns alignment */
+    
+    /* Vertical spacing for form fields */
+    .stSelectbox,
+    .stTextArea {
+        margin-bottom: 0.7rem !important;
+    }
+    .stTextInput,
+    .stTextArea,
+    .stSelectbox {
+        margin-bottom: 1.2rem !important;
+    }
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        background: #ffffff !important;
+        border: 1px solid #d1d5db !important;
         border-radius: 8px !important;
         color: #111827 !important;
         box-shadow: none !important;
+        padding: 0.75rem 0.875rem !important;
+        font-size: 0.92rem !important;
+        min-height: 2.5rem !important;
+    }
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
     }
     .stTextInput input::placeholder,
     .stTextArea textarea::placeholder {
         color: #9ca3af !important;
         opacity: 1;
     }
+    
+    
+    label[data-testid="stWidgetLabel"] {
+        margin-bottom: 0.35rem !important;
+    }
     label[data-testid="stWidgetLabel"] p {
         color: #111827 !important;
-        font-size: 0.76rem !important;
-        font-weight: 650 !important;
-        margin-bottom: 0.18rem;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        margin-bottom: 0.25rem !important;
+    }
+    /* Two-column form layout */
+    .stColumns > div > div {
+        padding: 0 0.5rem !important;
+    }
+    .stColumns > div > div:first-child {
+        padding-left: 0 !important;
+    }
+    .stColumns > div > div:last-child {
+        padding-right: 0 !important;
     }
     .stMarkdown hr {
         margin: 0.75rem 0;
@@ -657,6 +813,24 @@ st.markdown(
             padding-left: 0;
             padding-top: 0.8rem;
         }
+        div[data-testid="stForm"] {
+        padding: 1.2rem 1.2rem 0.6rem 1.2rem !important;
+        }
+    }
+    /* Additional form enhancements */
+    div[data-testid="stForm"] .stSelectbox {
+        position: relative;
+    }
+    div[data-testid="stForm"] .stSelectbox > div > div > div > div > div > svg {
+        color: #2563eb !important;
+    }
+    .stForm fieldset {
+        border: none !important;
+        padding: 0 !important;
+    }
+    /* Help text styling */
+    div[data-baseweb="popover"] {
+        background: #ffffff !important;
     }
     </style>
     """,
@@ -1245,6 +1419,76 @@ def render_topbar() -> None:
     )
 
 
+def render_page_header(title: str, subtitle: str) -> None:
+    st.markdown(
+        f"""
+        <div class="rl-page-title">
+            <h1>{escape(title)}</h1>
+            <p>{escape(subtitle)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_top_metric_cards() -> None:
+    score = st.session_state.risk_score if st.session_state.risk_score is not None else 0
+    regulations_count = sum(len(items) for items in st.session_state.regulations_by_category.values())
+    pending_actions = sum(len(items) for items in st.session_state.compliance_timeline.values())
+    upcoming_filings = len(st.session_state.compliance_timeline.get("Monthly", [])) + len(
+        st.session_state.compliance_timeline.get("Quarterly", [])
+    )
+
+    cards = [
+        ("Compliance Score", f"{score}%", "Your current compliance risk score."),
+        ("Applicable Regulations", str(regulations_count), "Laws and regulations that apply."),
+        ("Pending Actions", str(pending_actions), "Tasks that require your attention."),
+        ("Upcoming Filings", str(upcoming_filings), "Filings you should complete soon."),
+    ]
+
+    metrics_html = "".join(
+        f"""
+        <div class=\"rl-stat-card\">
+            <div class=\"metric-label\">{escape(title)}</div>
+            <div class=\"metric-value\">{escape(value)}</div>
+            <div class=\"metric-note\">{escape(note)}</div>
+        </div>
+        """
+        for title, value, note in cards
+    )
+
+    st.markdown(
+        f"""
+        <div class="top-card-grid">{metrics_html}</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_business_profile_card(is_post_check: bool) -> None:
+    status_html = "<span class=\"rl-status-pill\">Submitted</span>" if is_post_check else ""
+    intro_text = (
+        "Provide accurate details to get relevant compliance obligations." if not is_post_check
+        else "Your latest profile has been submitted and the report has been generated." 
+    )
+
+    st.markdown(
+        f"""
+        <div class="rl-card">
+            <div class="rl-section-head">
+                <div class="rl-title-left">
+                    <div class="rl-icon">BP</div>
+                    <h2>Business Profile</h2>
+                </div>
+                {status_html}
+            </div>
+            <p class="rl-help">{escape(intro_text)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def risk_label(score: int | None) -> str:
     if score is None:
         return "Not assessed"
@@ -1462,15 +1706,17 @@ def render_coverage_card() -> None:
 
 # Header
 render_topbar()
-st.markdown(
-    """
-    <div class="rl-page-title">
-        <h1>Compliance Check</h1>
-        <p>Enter your business details and get an audit-ready compliance checklist.</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
+
+is_post_check = st.session_state.risk_score is not None
+page_title = "Compliance Check Results" if is_post_check else "Compliance Check"
+page_description = (
+    "Based on the information provided, here is your compliance overview and actionable insights."
+    if is_post_check
+    else "Enter your business details and get an audit-ready compliance checklist."
 )
+render_page_header(page_title, page_description)
+
+render_top_metric_cards()
 
 # Legacy header markup remains below but is hidden by CSS to avoid changing workflow state.
 st.markdown(
@@ -1515,26 +1761,14 @@ with st.sidebar:
     api_url = st.text_input("Backend API URL", default_api_url)
 
 # Main form
-main_left, main_right = st.columns([0.95, 1.05], gap="medium")
+main_left, main_right = st.columns([0.8, 1.2], gap="large")
 
 with main_left:
-    st.markdown(
-        """
-        <div class="rl-panel-heading">
-            <div class="rl-section-head">
-                <div class="rl-title-left">
-                    <div class="rl-icon">BP</div>
-                    <h2>Business Profile</h2>
-                </div>
-            </div>
-            <p class="rl-help">Provide accurate details to get relevant compliance obligations.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
+    render_business_profile_card(is_post_check)
 
     with st.form("business_profile_form"):
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1], gap="medium")
 
         with col1:
             business_type = st.selectbox(
@@ -1564,7 +1798,7 @@ with main_left:
                 "Services / Products Offered",
                 value="Online payment gateway and UPI transaction processing for retail consumers.",
                 placeholder="Enter services or products",
-                height=120,
+                height=68,
                 help="Describe the key services or products your business offers.",
             )
 
@@ -1595,23 +1829,25 @@ with main_left:
             revenue = st.selectbox(
                 "Annual Revenue",
                 [
-                    "Under \u20b91 Crore",
-                    "\u20b91 Crore - \u20b95 Crore",
-                    "\u20b95 Crore - \u20b925 Crore",
-                    "Above \u20b925 Crore",
+                    "Under ₹1 Crore",
+                    "₹1 Crore - ₹5 Crore",
+                    "₹5 Crore - ₹25 Crore",
+                    "Above ₹25 Crore",
                 ],
                 index=1,
                 placeholder="Select annual revenue",
                 help="Choose the closest annual revenue band for your business.",
             )
 
+        st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
         st.markdown("---")
-        submit_col, lock_col = st.columns([0.36, 0.64], vertical_alignment="center")
-        with submit_col:
-            submitted = st.form_submit_button("Run Compliance Check", use_container_width=True)
-        with lock_col:
-            st.caption("Your data is secure and used only for compliance analysis.")
+        
+        submitted = st.form_submit_button(
+            "Run Compliance Check",
+            use_container_width=True
+        )
 
+        st.caption("Your data is secure and used only for compliance analysis.")
 with main_right:
     render_summary_card()
     reg_col, action_col = st.columns(2, gap="medium")
