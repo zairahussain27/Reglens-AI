@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reglens-config
+data:
+  # Comma-separated list used by src/api.py CORS middleware.
+  ALLOWED_ORIGINS: "http://localhost:8501"
+  # If omitted, backend will fall back to sqlite default.
+  DATABASE_URL: "sqlite:////app/data/reglens.db"
+  CHROMA_DB_PATH: "/app/chroma_db"
+  REQUIRE_VECTOR_STORE_READY: "true"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+
