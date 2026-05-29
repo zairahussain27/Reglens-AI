@@ -2,6 +2,15 @@
 __pycache__
 *.pyc
 .env
+.dist/
+venv/
+src/venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 data/
 chroma_db
 src/chroma_db
+temp/
+*.db
+*.sqlite
