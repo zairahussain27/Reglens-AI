@@ -1,5 +1,5 @@
-import chromadb
-from sentence_transformers import SentenceTransformer
+#import chromadb
+#from sentence_transformers import SentenceTransformer
 import logging
 import os
 from urllib.parse import urlparse
@@ -55,21 +55,26 @@ def get_collection():
         _collection = _client.get_or_create_collection(name="regulations")
     return _collection
 
-
-def check_vector_store() -> dict:
-    """Return a small health payload for the retriever dependencies."""
-    collection = get_collection()
+#def check_vector_store() -> dict:
+#    """Return a small health payload for the retriever dependencies."""
+#    collection = get_collection()
+#    return {
+#        "status": "ok",
+#        "path": chroma_db_path,
+#        "documents": collection.count(),
+#    }
+def check_vector_store():
     return {
-        "status": "ok",
-        "path": chroma_db_path,
-        "documents": collection.count(),
+        "status": "disabled",
+        "documents": 0
     }
 
+#def retrieve(query, n_results=5):
+#    if not isinstance(query, str) or not query.strip():
+#        logger.warning("Retriever received an empty or invalid query")
+#        return []
 def retrieve(query, n_results=5):
-    if not isinstance(query, str) or not query.strip():
-        logger.warning("Retriever received an empty or invalid query")
-        return []
-
+    return []
     try:
         n_results = max(1, min(int(n_results), 20))
     except (TypeError, ValueError):
