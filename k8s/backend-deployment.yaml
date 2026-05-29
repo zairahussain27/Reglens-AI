@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reglens-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reglens-backend
+  template:
+    metadata:
+      labels:
+        app: reglens-backend
+    spec:
+      containers:
+        - name: backend
+          image: reglens-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reglens-secrets
+                  key: GROQ_API_KEY
+            - name: ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: ALLOWED_ORIGINS
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: DATABASE_URL
+            - name: CHROMA_DB_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: CHROMA_DB_PATH
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: LOG_LEVEL
+            - name: REQUIRE_VECTOR_STORE_READY
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: REQUIRE_VECTOR_STORE_READY
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: reglens-config
+                  key: ENVIRONMENT
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: chroma
+              mountPath: /app/chroma_db
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: reglens-data
+        - name: chroma
+          persistentVolumeClaim:
+            claimName: reglens-chroma
+
