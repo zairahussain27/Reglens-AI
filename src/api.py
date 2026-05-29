@@ -219,7 +219,9 @@ def health_check() -> JSONResponse:
 
     try:
         vector_status = check_vector_store()
-        payload["components"]["vector_store"] = vector_status
+        payload["components"]["vector_store"] = {
+            "status": "disabled"
+        }
         if vector_status.get("documents", 0) == 0:
             payload["status"] = "degraded"
             if os.getenv("REQUIRE_VECTOR_STORE_READY", "false").lower() == "true":
