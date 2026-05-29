@@ -33,10 +33,13 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-def load_css():
-    with open("main.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+from pathlib import Path
 
+def load_css():
+    css_path = Path(__file__).parent / "main.css"
+    with open(css_path, encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+        
 load_css()
 # Initialize session state for checklists
 if "compliance_checklist" not in st.session_state:
