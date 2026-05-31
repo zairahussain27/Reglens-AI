@@ -222,15 +222,34 @@ def render_audit_history(api_url: str) -> None:
 
 # Helper functions
 def parse_risk_level(result_text: str) -> int:
-    """Extract risk score from compliance result (0-100)"""
-    if "HIGH" in result_text.upper() or "CRITICAL" in result_text.upper():
-        return 80
-    elif "MEDIUM" in result_text.upper() or "MODERATE" in result_text.upper():
+    """Extract risk score from compliance result (0-100) using regex pattern matching"""
+    import re
+    
+    # Look for the specific Risk Level section with emoji indicators
+    risk_pattern = r"(?:Overall Compliance Risk|Risk Level)[:\s]*(?:🔴|🟢|🟡)?\s*(High|Medium|Low)"
+    match = re.search(risk_pattern, result_text, re.IGNORECASE)
+    
+    if match:
+        risk_level = match.group(1).upper()
+        if "HIGH" in risk_level or "CRITICAL" in risk_level:
+            return 80
+        elif "MEDIUM" in risk_level or "MODERATE" in risk_level:
+            return 50
+        elif "LOW" in risk_level or "MINIMAL" in risk_level:
+            return 20
+    
+    # Fallback: search entire text for risk keywords (but with less confidence)
+    text_upper = result_text.upper()
+    if "CRITICAL" in text_upper:
+        return 85
+    elif re.search(r"HIGH.*RISK|RISK.*HIGH", text_upper):
+        return 75
+    elif re.search(r"MEDIUM.*RISK|RISK.*MEDIUM|MODERATE.*RISK", text_upper):
         return 50
-    elif "LOW" in result_text.upper() or "MINIMAL" in result_text.upper():
-        return 20
-    else:
-        return 50  # default to medium
+    elif re.search(r"LOW.*RISK|RISK.*LOW|MINIMAL.*RISK", text_upper):
+        return 25
+    
+    return 50  # default to medium if unparseable
 
 
 def get_risk_gauge(score: int) -> str:
@@ -244,7 +263,7 @@ def get_risk_gauge(score: int) -> str:
 
 
 def extract_regulations_by_category(result_text: str) -> dict:
-    """Parse compliance result and categorize regulations"""
+    """Parse compliance result and extract applicable regulations with their details"""
     categories = {
         "RBI": [],
         "GST": [],
@@ -255,28 +274,32 @@ def extract_regulations_by_category(result_text: str) -> dict:
         "Other": []
     }
     
-    lines = result_text.split("\n")
-    current_category = "Other"
+    # Look for regulation entries in format: "### N. [Regulation Name] — Source: [Source]"
+    regulation_pattern = r"###\s+\d+\.\s+([^—\n]+)(?:—|Source:)?"
+    matches = re.finditer(regulation_pattern, result_text)
     
-    for line in lines:
-        line_upper = line.upper()
-        if "RBI" in line_upper:
-            current_category = "RBI"
-        elif "GST" in line_upper or "CGST" in line_upper:
-            current_category = "GST"
-        elif "MSME" in line_upper or "UDYAM" in line_upper:
-            current_category = "MSME"
-        elif "SEBI" in line_upper:
-            current_category = "SEBI"
-        elif "COMPANIES ACT" in line_upper or "MCA" in line_upper:
-            current_category = "Companies Act"
-        elif "FEMA" in line_upper:
-            current_category = "FEMA"
+    for match in matches:
+        reg_name = match.group(1).strip()
         
-        # Add non-empty lines as regulations
-        if line.strip() and not any(cat in line_upper for cat in ["RBI", "GST", "MSME", "SEBI", "COMPANIES", "FEMA"]):
-            if len(line.strip()) > 10:  # Skip very short lines
-                categories[current_category].append(line.strip())
+        # Categorize by keyword matching
+        reg_upper = reg_name.upper()
+        if "RBI" in reg_upper:
+            category = "RBI"
+        elif "GST" in reg_upper or "CGST" in reg_upper:
+            category = "GST"
+        elif "MSME" in reg_upper or "UDYAM" in reg_upper:
+            category = "MSME"
+        elif "SEBI" in reg_upper:
+            category = "SEBI"
+        elif "COMPANIES ACT" in reg_upper or "MCA" in reg_upper:
+            category = "Companies Act"
+        elif "FEMA" in reg_upper:
+            category = "FEMA"
+        else:
+            category = "Other"
+        
+        if reg_name and len(reg_name) > 5:  # Only add meaningful regulations
+            categories[category].append(reg_name)
     
     # Remove empty categories
     return {k: v for k, v in categories.items() if v}
@@ -295,26 +318,37 @@ def clean_report_line(line: str) -> str:
 def extract_action_items(result_text: str) -> list[str]:
     """Extract checklist and next-step items from the model report."""
     items = []
-    in_next_steps = False
-
-    for raw_line in result_text.splitlines():
-        line = raw_line.strip()
-        line_lower = line.lower()
-
-        if "recommended next steps" in line_lower:
-            in_next_steps = True
-            continue
-        if line.startswith("##") and in_next_steps:
-            in_next_steps = False
-
-        is_checklist_item = bool(re.match(r"^[-*]\s+\[[ xX]\]\s+", line))
-        is_next_step = in_next_steps and bool(re.match(r"^\d+\.\s+", line))
-
-        if is_checklist_item or is_next_step:
-            cleaned = clean_report_line(line)
-            if cleaned and cleaned not in items:
-                items.append(cleaned)
-
+    
+    # Strategy 1: Look for markdown checkbox lists (- [ ] or - [x])
+    checklist_pattern = r"[-*]\s+\[[xX ]\]\s+(.+?)(?=\n|$)"
+    checklist_matches = re.finditer(checklist_pattern, result_text)
+    for match in checklist_matches:
+        item = match.group(1).strip()
+        if item and len(item) > 5 and item not in items:
+            items.append(item)
+    
+    # Strategy 2: Look for numbered lists in Recommended Next Steps section
+    next_steps_match = re.search(r"(?:Recommended Next Steps|RECOMMENDED NEXT STEPS)(.*?)(?=\n## |\Z)", result_text, re.DOTALL)
+    if next_steps_match:
+        next_steps_text = next_steps_match.group(1)
+        numbered_pattern = r"^\s*\d+\.\s+(.+?)(?=\n\s*\d+\.|$)"
+        numbered_matches = re.finditer(numbered_pattern, next_steps_text, re.MULTILINE)
+        for match in numbered_matches:
+            item = match.group(1).strip()
+            if item and len(item) > 5 and item not in items:
+                items.append(item)
+    
+    # Strategy 3: Look for action lines starting with "What you must do:" section
+    action_pattern = r"(?:What you must do:|what you must do:)(.*?)(?=\n(?:Risk if ignored|Flags &)|\n##|$)"
+    action_match = re.search(action_pattern, result_text, re.DOTALL)
+    if action_match:
+        action_text = action_match.group(1)
+        action_items = re.finditer(r"[-*]\s+\[?[xX ]?\]?\s*(.+?)(?=\n|$)", action_text)
+        for match in action_items:
+            item = match.group(1).strip()
+            if item and len(item) > 5 and item not in items:
+                items.append(item)
+    
     return items
 
 
