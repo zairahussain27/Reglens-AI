@@ -965,6 +965,8 @@ with st.sidebar:
     )
 
 
+active_tab = st.session_state.get("active_tab", "Compliance Check")
+
 if active_tab == "Compliance Check":
     # Main form and dashboard content
     # Legacy header markup remains below but is hidden by CSS to avoid changing workflow state.
