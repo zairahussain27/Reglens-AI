@@ -34,21 +34,11 @@ spec:
                 configMapKeyRef:
                   name: reglens-config
                   key: DATABASE_URL
-            - name: CHROMA_DB_PATH
-              valueFrom:
-                configMapKeyRef:
-                  name: reglens-config
-                  key: CHROMA_DB_PATH
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:
                   name: reglens-config
                   key: LOG_LEVEL
-            - name: REQUIRE_VECTOR_STORE_READY
-              valueFrom:
-                configMapKeyRef:
-                  name: reglens-config
-                  key: REQUIRE_VECTOR_STORE_READY
             - name: ENVIRONMENT
               valueFrom:
                 configMapKeyRef:
@@ -57,8 +47,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /app/data
-            - name: chroma
-              mountPath: /app/chroma_db
           readinessProbe:
             httpGet:
               path: /health
@@ -86,7 +74,4 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: reglens-data
-        - name: chroma
-          persistentVolumeClaim:
-            claimName: reglens-chroma
 

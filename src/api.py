@@ -143,18 +143,6 @@ def validate_environment() -> None:
 
     # Ensure data directories exist when using local paths
     db_url = os.getenv("DATABASE_URL")
-    chroma_path = os.getenv("CHROMA_DB_PATH")
-
-    # Resolve and create chroma db path if necessary
-    if chroma_path:
-        try:
-            if not os.path.isabs(chroma_path):
-                chroma_path = os.path.abspath(chroma_path)
-            os.makedirs(chroma_path, exist_ok=True)
-        except Exception:
-            logger.exception("Could not create CHROMA_DB_PATH at %s", chroma_path)
-            if env == "production":
-                raise
 
     # Ensure database directory exists for sqlite file paths
     if db_url and db_url.startswith("sqlite") and "memory" not in db_url:
@@ -219,10 +207,8 @@ def health_check() -> JSONResponse:
 
     try:
         vector_status = check_vector_store()
-        payload["components"]["vector_store"] = {
-            "status": "disabled"
-        }
-        if vector_status.get("documents", 0) == 0:
+        payload["components"]["vector_store"] = vector_status
+        if vector_status.get("status") != "disabled" and vector_status.get("documents", 0) == 0:
             payload["status"] = "degraded"
             if os.getenv("REQUIRE_VECTOR_STORE_READY", "false").lower() == "true":
                 status_code = 503

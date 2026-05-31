@@ -2,15 +2,14 @@
 
 AI-powered regulatory compliance assistant for Indian FinTechs and MSMEs.
 
-RegLens AI reads official regulatory PDFs, retrieves relevant clauses with ChromaDB, and uses Groq Llama 3.3 to produce an auditable compliance checklist, risk summary, source documents, and downloadable reports.
+RegLens AI uses Groq Llama 3.3 to produce an auditable compliance checklist, risk summary, source documents, and downloadable reports.
 
 ## Stack
 
 - Backend: FastAPI
 - Frontend: Streamlit
 - LLM: Groq API
-- Vector DB: ChromaDB
-- Embeddings: sentence-transformers
+- Vector retrieval: Local keyword retrieval over bundled regulation context
 - Audit log: SQLite
 - Reports: ReportLab PDF and Markdown
 - Deployment: Docker Compose or Kubernetes
@@ -29,7 +28,6 @@ Set at least:
 GROQ_API_KEY=your_groq_api_key
 ALLOWED_ORIGINS=http://localhost:8501
 DATABASE_URL=sqlite:///./data/reglens.db
-CHROMA_DB_PATH=./chroma_db
 BACKEND_API_URL=http://localhost:8000
 ```
 
@@ -38,8 +36,6 @@ For production containers, use:
 ```env
 ENVIRONMENT=production
 DATABASE_URL=sqlite:////app/data/reglens.db
-CHROMA_DB_PATH=/app/chroma_db
-REQUIRE_VECTOR_STORE_READY=true
 ```
 
 ## Local Development
@@ -49,12 +45,6 @@ Install dependencies:
 ```bash
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-```
-
-Build or refresh the local Chroma index from bundled PDFs:
-
-```bash
-python -m src.ingest
 ```
 
 Run the backend:
@@ -83,13 +73,11 @@ Run a deployment preflight:
 python scripts/deployment_check.py
 ```
 
-Build, ingest the bundled regulations into the Chroma volume, and start both services:
+Build and start both services:
 
 ```bash
 docker compose up --build
 ```
-
-Compose starts a one-shot `ingest` service first. The backend only becomes healthy after the vector store contains documents.
 
 Services:
 
@@ -101,15 +89,7 @@ Useful commands:
 ```bash
 docker compose ps
 docker compose logs -f backend
-docker compose logs -f ingest
 docker compose down
-```
-
-To rebuild the vector index from scratch:
-
-```bash
-docker compose down -v
-docker compose up --build
 ```
 
 ## Build Images Manually
@@ -125,10 +105,7 @@ Run backend:
 docker run --rm -p 8000:8000 --env-file .env \
   -e ENVIRONMENT=production \
   -e DATABASE_URL=sqlite:////app/data/reglens.db \
-  -e CHROMA_DB_PATH=/app/chroma_db \
-  -e REQUIRE_VECTOR_STORE_READY=true \
   -v reglens-data:/app/data \
-  -v reglens-chroma:/app/chroma_db \
   reglens-backend:latest
 ```
 
@@ -158,13 +135,6 @@ kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/pvc.yaml
 ```
 
-Populate ChromaDB:
-
-```bash
-kubectl apply -f k8s/ingest-job.yaml
-kubectl wait --for=condition=complete job/reglens-ingest --timeout=20m
-```
-
 Deploy backend and frontend:
 
 ```bash
@@ -182,29 +152,6 @@ kubectl rollout status deployment/reglens-frontend
 kubectl get svc reglens-frontend
 ```
 
-## Updating The Knowledge Base
-
-Refresh from bundled PDFs:
-
-```bash
-python -m src.ingest
-```
-
-Fetch trusted official government PDFs from `government_sources.py` and reingest:
-
-```bash
-python update_regulations.py
-```
-
-In Kubernetes, rerun the ingest job after deleting the old completed job:
-
-```bash
-kubectl delete job reglens-ingest --ignore-not-found
-kubectl apply -f k8s/ingest-job.yaml
-kubectl wait --for=condition=complete job/reglens-ingest --timeout=20m
-kubectl rollout restart deployment/reglens-backend
-```
-
 ## Testing And CI
 
 Run tests:
@@ -220,8 +167,7 @@ The GitHub Actions workflow runs tests and builds both Docker images. Test failu
 
 - `.env` or Kubernetes Secret contains a real `GROQ_API_KEY`.
 - `ALLOWED_ORIGINS` contains the deployed frontend origin.
-- ChromaDB has been populated by `python -m src.ingest` or `k8s/ingest-job.yaml`.
-- `/health` returns HTTP 200 and includes vector documents greater than zero.
-- SQLite and Chroma paths are backed by persistent volumes.
+- `/health` returns HTTP 200 and reports local keyword retrieval as healthy.
+- SQLite audit data is backed by persistent storage when required.
 - Images are tagged with immutable release tags before production deployment.
 - Frontend `BACKEND_API_URL` points to the reachable backend URL for that environment.

@@ -20,15 +20,13 @@ COPY prompts ./prompts
 COPY regulations ./regulations
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser \
-    && mkdir -p /app/data /app/chroma_db \
+    && mkdir -p /app/data \
     && chown -R appuser:appuser /app
 
 USER appuser
 
 ENV ALLOWED_ORIGINS=http://localhost:8501,http://frontend:8501 \
-    DATABASE_URL=sqlite:////app/data/reglens.db \
-    CHROMA_DB_PATH=/app/chroma_db \
-    REQUIRE_VECTOR_STORE_READY=true
+    DATABASE_URL=sqlite:////app/data/reglens.db
 
 EXPOSE 8000
 

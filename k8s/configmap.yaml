@@ -7,8 +7,6 @@ data:
   ALLOWED_ORIGINS: "http://localhost:8501"
   # If omitted, backend will fall back to sqlite default.
   DATABASE_URL: "sqlite:////app/data/reglens.db"
-  CHROMA_DB_PATH: "/app/chroma_db"
-  REQUIRE_VECTOR_STORE_READY: "true"
   ENVIRONMENT: "production"
   LOG_LEVEL: "INFO"
 

@@ -67,8 +67,10 @@ if "active_tab" not in st.session_state:
 # Input validation functions
 def sanitize_input(value: str) -> str:
     """Remove potentially malicious content from input strings"""
+    if value is None:
+        return ""
     if not isinstance(value, str):
-        return value
+        value = str(value)
     
     # Remove newlines and tabs
     value = value.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
@@ -112,7 +114,7 @@ def validate_business_profile(profile: dict) -> tuple[bool, str]:
     
     # Check other required fields
     for field in ["business_type", "industry", "customer_type", "transaction_type", "revenue"]:
-        value = profile.get(field, "").strip()
+        value = sanitize_input(profile.get(field, ""))
         if not value:
             errors.append(f"{field.replace('_', ' ').title()} is required")
             is_valid = False
@@ -222,34 +224,55 @@ def render_audit_history(api_url: str) -> None:
 
 # Helper functions
 def parse_risk_level(result_text: str) -> int:
-    """Extract risk score from compliance result (0-100) using regex pattern matching"""
+    """Extract risk score from compliance result (0-100) using multiple strategies"""
     import re
     
-    # Look for the specific Risk Level section with emoji indicators
-    risk_pattern = r"(?:Overall Compliance Risk|Risk Level)[:\s]*(?:🔴|🟢|🟡)?\s*(High|Medium|Low)"
-    match = re.search(risk_pattern, result_text, re.IGNORECASE)
+    # Strategy 1: Look for emoji-based risk indicators (most reliable)
+    # Pattern: "🔴 High" or "🟡 Medium" or "🟢 Low"
+    emoji_pattern = r"(🔴|🔻|🟔).*?(High|CRITICAL)|🟡.*?(Medium|MODERATE)|🟢.*?(Low|MINIMAL)"
+    if re.search(emoji_pattern, result_text, re.IGNORECASE):
+        if re.search(r"🔴|🔻|🟔", result_text):
+            return 80  # Red = High Risk
+        elif re.search(r"🟡", result_text):
+            return 50  # Yellow = Medium Risk
+        elif re.search(r"🟢", result_text):
+            return 20  # Green = Low Risk
     
-    if match:
-        risk_level = match.group(1).upper()
-        if "HIGH" in risk_level or "CRITICAL" in risk_level:
+    # Strategy 2: Look for explicit "Risk Level" or "Compliance Risk" section
+    risk_section_pattern = r"(?:##\s*)?(?:Overall\s+)?Compliance\s+Risk[:\s]*([A-Za-z]+)"
+    section_match = re.search(risk_section_pattern, result_text, re.IGNORECASE)
+    if section_match:
+        risk_word = section_match.group(1).upper().strip()
+        if "HIGH" in risk_word or "CRITICAL" in risk_word:
             return 80
-        elif "MEDIUM" in risk_level or "MODERATE" in risk_level:
+        elif "MEDIUM" in risk_word or "MODERATE" in risk_word:
             return 50
-        elif "LOW" in risk_level or "MINIMAL" in risk_level:
+        elif "LOW" in risk_word or "MINIMAL" in risk_word:
             return 20
     
-    # Fallback: search entire text for risk keywords (but with less confidence)
+    # Strategy 3: Search for risk keywords in specific context (not anywhere in text)
     text_upper = result_text.upper()
-    if "CRITICAL" in text_upper:
-        return 85
-    elif re.search(r"HIGH.*RISK|RISK.*HIGH", text_upper):
-        return 75
-    elif re.search(r"MEDIUM.*RISK|RISK.*MEDIUM|MODERATE.*RISK", text_upper):
-        return 50
-    elif re.search(r"LOW.*RISK|RISK.*LOW|MINIMAL.*RISK", text_upper):
-        return 25
     
-    return 50  # default to medium if unparseable
+    # Check for explicit "HIGH RISK" or "CRITICAL" phrases
+    if re.search(r"\bCRITICAL\b|\bHIGH\s+RISK\b", text_upper):
+        return 80
+    elif re.search(r"\bMEDIUM\s+RISK\b", text_upper):
+        return 50
+    elif re.search(r"\bLOW\s+RISK\b", text_upper):
+        return 20
+    
+    # Strategy 4: Look for the exact words in order after "Risk Level"
+    if "RISK LEVEL" in text_upper or "COMPLIANCE RISK" in text_upper:
+        section_after_risk = text_upper.split("RISK LEVEL")[-1][:500]
+        if "HIGH" in section_after_risk:
+            return 80
+        elif "LOW" in section_after_risk:
+            return 20
+        else:
+            return 50
+    
+    # Default: return 50 (Medium) if completely unparseable
+    return 50
 
 
 def get_risk_gauge(score: int) -> str:
@@ -276,7 +299,11 @@ def extract_regulations_by_category(result_text: str) -> dict:
     
     # Look for regulation entries in format: "### N. [Regulation Name] — Source: [Source]"
     regulation_pattern = r"###\s+\d+\.\s+([^—\n]+)(?:—|Source:)?"
-    matches = re.finditer(regulation_pattern, result_text)
+    matches = re.finditer(
+        r"^###\s+\d+\.\s+(.+?)(?:\s+[—-]\s+Source:|\s+Source:|$)",
+        result_text,
+        re.MULTILINE,
+    )
     
     for match in matches:
         reg_name = match.group(1).strip()
@@ -323,7 +350,7 @@ def extract_action_items(result_text: str) -> list[str]:
     checklist_pattern = r"[-*]\s+\[[xX ]\]\s+(.+?)(?=\n|$)"
     checklist_matches = re.finditer(checklist_pattern, result_text)
     for match in checklist_matches:
-        item = match.group(1).strip()
+        item = clean_report_line(match.group(1))
         if item and len(item) > 5 and item not in items:
             items.append(item)
     
@@ -334,7 +361,7 @@ def extract_action_items(result_text: str) -> list[str]:
         numbered_pattern = r"^\s*\d+\.\s+(.+?)(?=\n\s*\d+\.|$)"
         numbered_matches = re.finditer(numbered_pattern, next_steps_text, re.MULTILINE)
         for match in numbered_matches:
-            item = match.group(1).strip()
+            item = clean_report_line(match.group(1))
             if item and len(item) > 5 and item not in items:
                 items.append(item)
     
@@ -345,7 +372,7 @@ def extract_action_items(result_text: str) -> list[str]:
         action_text = action_match.group(1)
         action_items = re.finditer(r"[-*]\s+\[?[xX ]?\]?\s*(.+?)(?=\n|$)", action_text)
         for match in action_items:
-            item = match.group(1).strip()
+            item = clean_report_line(match.group(1))
             if item and len(item) > 5 and item not in items:
                 items.append(item)
     
@@ -828,13 +855,18 @@ def render_regulations_card() -> None:
             break
 
     if not rows:
-        rows = [
-            ("RBI", "RBI KYC Master Directions, 2016"),
-            ("GST", "GST Act, 2017"),
-            ("MCA", "Companies Act, 2013"),
-            ("MSME", "MSME Udyam Registration"),
-            ("FEMA", "FEMA Basic Compliance"),
-        ]
+        st.markdown(
+            """
+            <div class="rl-card">
+                <div class="rl-section-head">
+                    <h3>Top Applicable Regulations</h3>
+                </div>
+                <p class="rl-help">Run a compliance check to populate applicable regulations.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
 
     rows_html = "\n".join(
         f"""
@@ -865,12 +897,18 @@ def render_regulations_card() -> None:
 def render_actions_card() -> None:
     rows = flatten_timeline_items()
     if not rows:
-        rows = [
-            ("Pending", "Complete KYC Policy Review"),
-            ("Pending", "Update Privacy Policy"),
-            ("Upcoming", "Annual IT Security Audit"),
-            ("Upcoming", "Board Resolution Update"),
-        ]
+        st.markdown(
+            """
+            <div class="rl-card">
+                <div class="rl-section-head">
+                    <h3>Required Actions</h3>
+                </div>
+                <p class="rl-help">Run a compliance check to populate required actions.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
 
     rows_html = ""
     for bucket, item in rows:
@@ -959,7 +997,9 @@ page_description = (
 )
 render_page_header(page_title, page_description)
 
-render_top_metric_cards()
+top_metrics_slot = st.empty()
+with top_metrics_slot.container():
+    render_top_metric_cards()
 
 # Sidebar (always visible)
 with st.sidebar:
@@ -995,7 +1035,7 @@ with st.sidebar:
 
     api_url = st.text_input(
         "Backend API URL",
-        os.getenv("BACKEND_API_URL", "https://reglens-backend.onrender.com")
+        os.getenv("BACKEND_API_URL", "http://localhost:8000")
     )
 
 
@@ -1105,12 +1145,18 @@ if active_tab == "Compliance Check":
 
             st.caption("Your data is secure and used only for compliance analysis.")
     with main_right:
-        render_summary_card()
+        summary_slot = st.empty()
+        with summary_slot.container():
+            render_summary_card()
         reg_col, action_col = st.columns(2, gap="medium")
         with reg_col:
-            render_regulations_card()
+            regulations_slot = st.empty()
+            with regulations_slot.container():
+                render_regulations_card()
         with action_col:
-            render_actions_card()
+            actions_slot = st.empty()
+            with actions_slot.container():
+                render_actions_card()
 
     render_coverage_card()
 
@@ -1155,6 +1201,11 @@ if active_tab == "Compliance Check":
                     
                         st.session_state.regulations_by_category = extract_regulations_by_category(result)
                         st.session_state.compliance_timeline = build_compliance_timeline(result)
+                        st.session_state.compliance_checklist = {}
+                        # Debug: Log first 500 chars of LLM response for inspection
+                        import sys
+                        print(f"DEBUG: LLM Result (first 500 chars):\n{result[:500]}", file=sys.stderr)
+                        print(f"DEBUG: Parsed Risk Score: {st.session_state.risk_score}", file=sys.stderr)
                         st.session_state.latest_business_profile = business_profile
                         st.session_state.latest_source_documents = source_documents
                         st.session_state.latest_result_text = result
@@ -1176,6 +1227,15 @@ if active_tab == "Compliance Check":
                         except ModuleNotFoundError:
                             # PDF generation is optional
                             st.session_state.latest_report_pdf = b""
+
+                        with top_metrics_slot.container():
+                            render_top_metric_cards()
+                        with summary_slot.container():
+                            render_summary_card()
+                        with regulations_slot.container():
+                            render_regulations_card()
+                        with actions_slot.container():
+                            render_actions_card()
                     
                     st.markdown("---")
                     st.markdown("## Compliance Analysis Report")

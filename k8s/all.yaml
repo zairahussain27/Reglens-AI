@@ -8,8 +8,6 @@ items:
     data:
       ALLOWED_ORIGINS: "http://localhost:8501"
       DATABASE_URL: "sqlite:////app/data/reglens.db"
-      CHROMA_DB_PATH: "/app/chroma_db"
-      REQUIRE_VECTOR_STORE_READY: "true"
       ENVIRONMENT: "production"
       LOG_LEVEL: "INFO"
   - apiVersion: v1
@@ -21,49 +19,6 @@ items:
       resources:
         requests:
           storage: 1Gi
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: reglens-chroma
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 2Gi
-  - apiVersion: batch/v1
-    kind: Job
-    metadata:
-      name: reglens-ingest
-    spec:
-      backoffLimit: 2
-      template:
-        spec:
-          restartPolicy: Never
-          containers:
-            - name: ingest
-              image: reglens-backend:latest
-              imagePullPolicy: IfNotPresent
-              command: ["python", "-m", "src.ingest"]
-              env:
-                - name: CHROMA_DB_PATH
-                  valueFrom:
-                    configMapKeyRef:
-                      name: reglens-config
-                      key: CHROMA_DB_PATH
-              volumeMounts:
-                - name: chroma
-                  mountPath: /app/chroma_db
-              resources:
-                requests:
-                  cpu: "500m"
-                  memory: "1Gi"
-                limits:
-                  cpu: "2000m"
-                  memory: "2Gi"
-          volumes:
-            - name: chroma
-              persistentVolumeClaim:
-                claimName: reglens-chroma
   - apiVersion: apps/v1
     kind: Deployment
     metadata:
@@ -100,21 +55,11 @@ items:
                     configMapKeyRef:
                       name: reglens-config
                       key: DATABASE_URL
-                - name: CHROMA_DB_PATH
-                  valueFrom:
-                    configMapKeyRef:
-                      name: reglens-config
-                      key: CHROMA_DB_PATH
                 - name: LOG_LEVEL
                   valueFrom:
                     configMapKeyRef:
                       name: reglens-config
                       key: LOG_LEVEL
-                - name: REQUIRE_VECTOR_STORE_READY
-                  valueFrom:
-                    configMapKeyRef:
-                      name: reglens-config
-                      key: REQUIRE_VECTOR_STORE_READY
                 - name: ENVIRONMENT
                   valueFrom:
                     configMapKeyRef:
@@ -123,8 +68,6 @@ items:
               volumeMounts:
                 - name: data
                   mountPath: /app/data
-                - name: chroma
-                  mountPath: /app/chroma_db
               readinessProbe:
                 httpGet:
                   path: /health
@@ -152,9 +95,6 @@ items:
             - name: data
               persistentVolumeClaim:
                 claimName: reglens-data
-            - name: chroma
-              persistentVolumeClaim:
-                claimName: reglens-chroma
   - apiVersion: v1
     kind: Service
     metadata:
