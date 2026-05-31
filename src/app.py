@@ -1118,7 +1118,7 @@ if active_tab == "Compliance Check":
                         source_documents = parse_source_documents(response_payload.get("source_documents", []))
 
                         st.session_state.risk_score = parse_risk_level(result)
-                        st.write("DEBUG:", st.session_state.risk_score)
+                    
                         st.session_state.regulations_by_category = extract_regulations_by_category(result)
                         st.session_state.compliance_timeline = build_compliance_timeline(result)
                         st.session_state.latest_business_profile = business_profile
