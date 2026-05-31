@@ -964,19 +964,6 @@ with st.sidebar:
         os.getenv("BACKEND_API_URL", "https://reglens-backend.onrender.com")
     )
 
-# Simple top navigation (acts like tabs)
-nav_c1, nav_c2, nav_c3 = st.columns([1, 1, 1])
-with nav_c1:
-    if st.button("Compliance Check"):
-        st.session_state.active_tab = "Compliance Check"
-with nav_c2:
-    if st.button("Regulatory Updates"):
-        st.session_state.active_tab = "Regulatory Updates"
-with nav_c3:
-    if st.button("About"):
-        st.session_state.active_tab = "About"
-
-active_tab = st.session_state.get("active_tab", "Compliance Check")
 
 if active_tab == "Compliance Check":
     # Main form and dashboard content
