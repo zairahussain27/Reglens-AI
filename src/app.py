@@ -28,9 +28,10 @@ from io import BytesIO
 # Page config
 st.set_page_config(
     page_title="RegLens AI",
-    page_icon="RL",
+    page_icon="assets/reglens_logo.png",
     layout="wide",
-    initial_sidebar_state="expanded",
+
+    
 )
 
 from pathlib import Path
@@ -39,7 +40,7 @@ def load_css():
     css_path = Path(__file__).parent / "main.css"
     with open(css_path, encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-        
+
 load_css()
 # Initialize session state for checklists
 if "compliance_checklist" not in st.session_state:
@@ -60,7 +61,9 @@ if "latest_source_documents" not in st.session_state:
     st.session_state.latest_source_documents = []
 if "latest_result_text" not in st.session_state:
     st.session_state.latest_result_text = None
-
+if "active_tab" not in st.session_state:
+    st.session_state.active_tab = "Compliance Check"
+  
 # Input validation functions
 def sanitize_input(value: str) -> str:
     """Remove potentially malicious content from input strings"""
@@ -924,337 +927,385 @@ render_page_header(page_title, page_description)
 
 render_top_metric_cards()
 
-# Legacy header markup remains below but is hidden by CSS to avoid changing workflow state.
-st.markdown(
-    """
-    <div class='app-card hero-card'>
-        <h1 style='text-align: center; margin-bottom: 0.15rem;'>RegLens AI</h1>
-        <p style='text-align: center; font-size: 1.05rem; opacity: 0.86; margin-top: 0; max-width: 860px; margin-left: auto; margin-right: auto;'>
-            AI-powered regulatory compliance assistant for Indian FinTechs & MSMEs.
-            Enter a strong business profile and get a regulation-aware compliance checklist with audit-ready reasoning.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Sidebar
+# Sidebar (always visible)
 with st.sidebar:
-    st.markdown("### RegLens AI")
-    st.caption("Compliance workspace")
-    st.markdown("---")
-    st.markdown("### About RegLens AI")
+    
     st.markdown("""
-    RegLens AI reads **real government regulations** and tells you exactly:
-    - Which laws apply to your business
-    - Why they apply
-    - What you must do
-    - Your compliance risk level
-    """)
-    st.markdown("---")
-    st.markdown("**Regulatory Coverage:**")
-    st.markdown("""
-    - RBI KYC & Payment Guidelines
-    - NBFC & Digital Lending Rules
-    - GST & CGST Rules 2017
-    - MSME Udyam Registration
-    - Income Tax TDS Provisions
-    - FEMA Compliance
-    - Companies Act 2013
-    """)
-    st.markdown("---")
-    default_api_url = os.getenv("BACKEND_API_URL", "http://localhost:8000")
-    api_url = st.text_input("Backend API URL", default_api_url)
+    
+    <h3>About RegLens AI</h3>
 
-# Main form
-main_left, main_right = st.columns([1.15, 1.15], gap="medium")
+    RegLens AI reads real government regulations and tells you exactly:
 
-with main_left:
-    st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
-    render_business_profile_card(is_post_check)
+    ✓ Which laws apply to your business
 
-    with st.form("business_profile_form"):
-        col1, col2 = st.columns([1, 1], gap="medium")
+    ✓ Why they apply
 
-        with col1:
-            business_type = st.selectbox(
-                "Business Type",
-                ["Private Limited Company", "LLP", "Sole Proprietorship", "Partnership Firm", "OPC"],
-                index=None,
-                placeholder="Select business type",
-                help="Choose the legal business entity that matches your company.",
+    ✓ What you must do
+
+    ✓ Your compliance risk level
+
+    <hr>
+
+    <h3>Regulatory Coverage</h3>
+
+    • RBI KYC & Payment Guidelines<br>
+    • NBFC & Digital Lending Rules<br>
+    • GST & CGST Rules 2017<br>
+    • MSME Udyam Registration<br>
+    • Income Tax TDS Provisions<br>
+    • FEMA Compliance<br>
+    • Companies Act 2013
+
+    <hr>
+    """, unsafe_allow_html=True)
+
+    api_url = st.text_input(
+        "Backend API URL",
+        os.getenv("BACKEND_API_URL", "http://localhost:8000")
+    )
+
+# Simple top navigation (acts like tabs)
+nav_c1, nav_c2, nav_c3 = st.columns([1, 1, 1])
+with nav_c1:
+    if st.button("Compliance Check"):
+        st.session_state.active_tab = "Compliance Check"
+with nav_c2:
+    if st.button("Regulatory Updates"):
+        st.session_state.active_tab = "Regulatory Updates"
+with nav_c3:
+    if st.button("About"):
+        st.session_state.active_tab = "About"
+
+active_tab = st.session_state.get("active_tab", "Compliance Check")
+
+if active_tab == "Compliance Check":
+    # Main form and dashboard content
+    # Legacy header markup remains below but is hidden by CSS to avoid changing workflow state.
+    st.markdown(
+        """
+        <div class='app-card hero-card'>
+            <h1 style='text-align: center; margin-bottom: 0.15rem;'>RegLens AI</h1>
+            <p style='text-align: center; font-size: 1.05rem; opacity: 0.86; margin-top: 0; max-width: 860px; margin-left: auto; margin-right: auto;'>
+                AI-powered regulatory compliance assistant for Indian FinTechs & MSMEs.
+                Enter a strong business profile and get a regulation-aware compliance checklist with audit-ready reasoning.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Main form
+    main_left, main_right = st.columns([1.15, 1.15], gap="medium")
+
+    with main_left:
+        st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
+        render_business_profile_card(is_post_check)
+
+        with st.form("business_profile_form"):
+            col1, col2 = st.columns([1, 1], gap="medium")
+
+            with col1:
+                business_type = st.selectbox(
+                    "Business Type",
+                    ["Private Limited Company", "LLP", "Sole Proprietorship", "Partnership Firm", "OPC"],
+                    index=None,
+                    placeholder="Select business type",
+                    help="Choose the legal business entity that matches your company.",
+                )
+
+                industry = st.selectbox(
+                    "Industry",
+                    [
+                        "FinTech - Digital Payments",
+                        "FinTech - Lending / NBFC",
+                        "MSME - Manufacturing",
+                        "MSME - Services",
+                        "E-Commerce",
+                        "SaaS / Technology",
+                    ],
+                    index=None,
+                    placeholder="Select industry",
+                    help="Select the industry category closest to your operations.",
+                )
+
+                services = st.text_area(
+                    "Services / Products Offered",
+                    placeholder="Enter services or products",
+                    height=110,
+                    help="Describe the key services or products your business offers.",
+                )
+
+            with col2:
+                customer_type = st.selectbox(
+                    "Customer Type",
+                    ["Retail Consumers (B2C)", "Businesses (B2B)", "Both B2B and B2C", "Government (B2G)"],
+                    index=None,
+                    placeholder="Select customer type",
+                    help="Choose the main customer segment your business serves.",
+                )
+
+                transaction_type = st.selectbox(
+                    "Primary Transaction Type",
+                    [
+                        "Digital Payments / UPI",
+                        "Lending / Credit",
+                        "Investment / Wealth",
+                        "Insurance",
+                        "Product Sales",
+                        "Service Billing",
+                    ],
+                    index=None,
+                    placeholder="Select transaction type",
+                    help="Select the transaction type that best represents your business model.",
+                )
+
+                revenue = st.selectbox(
+                    "Annual Revenue",
+                    [
+                        "Under ₹1 Crore",
+                        "₹1 Crore - ₹5 Crore",
+                        "₹5 Crore - ₹25 Crore",
+                        "Above ₹25 Crore",
+                    ],
+                    index=None,
+                    placeholder="Select annual revenue",
+                    help="Choose the closest annual revenue band for your business.",
+                )
+
+            st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
+            st.markdown("---")
+            
+            submitted = st.form_submit_button(
+                "Run Compliance Check",
+                use_container_width=True
             )
 
-            industry = st.selectbox(
-                "Industry",
-                [
-                    "FinTech - Digital Payments",
-                    "FinTech - Lending / NBFC",
-                    "MSME - Manufacturing",
-                    "MSME - Services",
-                    "E-Commerce",
-                    "SaaS / Technology",
-                ],
-                index=None,
-                placeholder="Select industry",
-                help="Select the industry category closest to your operations.",
-            )
+            st.caption("Your data is secure and used only for compliance analysis.")
+    with main_right:
+        render_summary_card()
+        reg_col, action_col = st.columns(2, gap="medium")
+        with reg_col:
+            render_regulations_card()
+        with action_col:
+            render_actions_card()
 
-            services = st.text_area(
-                "Services / Products Offered",
-                
-                placeholder="Enter services or products",
-                height=110,
-                help="Describe the key services or products your business offers.",
-            )
+    render_coverage_card()
 
-        with col2:
-            customer_type = st.selectbox(
-                "Customer Type",
-                ["Retail Consumers (B2C)", "Businesses (B2B)", "Both B2B and B2C", "Government (B2G)"],
-                index=None,
-                placeholder="Select customer type",
-                help="Choose the main customer segment your business serves.",
-            )
-
-            transaction_type = st.selectbox(
-                "Primary Transaction Type",
-                [
-                    "Digital Payments / UPI",
-                    "Lending / Credit",
-                    "Investment / Wealth",
-                    "Insurance",
-                    "Product Sales",
-                    "Service Billing",
-                ],
-                index=None,
-                placeholder="Select transaction type",
-                help="Select the transaction type that best represents your business model.",
-            )
-
-            revenue = st.selectbox(
-                "Annual Revenue",
-                [
-                    "Under ₹1 Crore",
-                    "₹1 Crore - ₹5 Crore",
-                    "₹5 Crore - ₹25 Crore",
-                    "Above ₹25 Crore",
-                ],
-                index=None,
-                placeholder="Select annual revenue",
-                help="Choose the closest annual revenue band for your business.",
-            )
-
-        st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
-        st.markdown("---")
+    if submitted:
+        business_profile = {
+            "business_type": business_type,
+            "industry": industry,
+            "services": services,
+            "customer_type": customer_type,
+            "transaction_type": transaction_type,
+            "revenue": revenue
+        }
         
-        submitted = st.form_submit_button(
-            "Run Compliance Check",
-            use_container_width=True
-        )
-
-        st.caption("Your data is secure and used only for compliance analysis.")
-with main_right:
-    render_summary_card()
-    reg_col, action_col = st.columns(2, gap="medium")
-    with reg_col:
-        render_regulations_card()
-    with action_col:
-        render_actions_card()
-
-render_coverage_card()
-if submitted:
-    business_profile = {
-        "business_type": business_type,
-        "industry": industry,
-        "services": services,
-        "customer_type": customer_type,
-        "transaction_type": transaction_type,
-        "revenue": revenue
-    }
-    
-    # Run client-side validation
-    is_valid, validation_message = validate_business_profile(business_profile)
-    
-    if not is_valid:
-        st.error(validation_message)
-    else:
-        with st.spinner("Analyzing regulations for your business... This may take 15-30 seconds."):
-            try:
-                endpoint = f"{api_url.rstrip('/')}/api/compliance-check"
-                response = requests.post(endpoint, json=business_profile, timeout=120)
-                
-                if response.status_code == 422:
-                    # Handle validation errors from backend
-                    error_data = response.json()
-                    st.error("**Input Validation Error**")
-                    if "errors" in error_data:
-                        for error in error_data.get("errors", []):
-                            st.error(error)
-                    else:
-                        st.error(error_data.get("detail", "Invalid input provided"))
-                    st.stop()
-                else:
-                    response.raise_for_status()
-                    response_payload = response.json()
-                    result = response_payload.get("result", "No result returned from backend.")
-                    source_documents = parse_source_documents(response_payload.get("source_documents", []))
-
-                    st.session_state.risk_score = parse_risk_level(result)
-                    st.session_state.regulations_by_category = extract_regulations_by_category(result)
-                    st.session_state.compliance_timeline = build_compliance_timeline(result)
-                    st.session_state.latest_business_profile = business_profile
-                    st.session_state.latest_source_documents = source_documents
-                    st.session_state.latest_result_text = result
-                    st.session_state.latest_report_markdown = build_markdown_report(
-                        business_profile,
-                        result,
-                        st.session_state.risk_score,
-                        st.session_state.compliance_timeline,
-                        source_documents,
-                    )
-                    st.session_state.latest_report_pdf = build_pdf_report(
-                        business_profile,
-                        result,
-                        st.session_state.risk_score,
-                        st.session_state.compliance_timeline,
-                        source_documents,
-                    )
-                
-                st.markdown("---")
-                st.markdown("## Compliance Analysis Report")
-                
-                # Risk Gauge Section
-                st.subheader("Compliance Risk Assessment")
-                risk_col1, risk_col2, risk_col3 = st.columns([1, 2, 1])
-                
-                with risk_col2:
-                    risk_gauge = get_risk_gauge(st.session_state.risk_score)
-                    st.metric(
-                        "Risk Level",
-                        f"{st.session_state.risk_score}%",
-                        delta=risk_gauge,
-                        delta_color="off"
-                    )
+        # Run client-side validation
+        is_valid, validation_message = validate_business_profile(business_profile)
+        
+        if not is_valid:
+            st.error(validation_message)
+        else:
+            with st.spinner("Analyzing regulations for your business... This may take 15-30 seconds."):
+                try:
+                    endpoint = f"{api_url.rstrip('/')}/api/compliance-check"
+                    response = requests.post(endpoint, json=business_profile, timeout=120)
                     
-                    # Progress bar visualization
-                    st.progress(st.session_state.risk_score / 100)
-                
-                st.markdown("---")
+                    if response.status_code == 422:
+                        # Handle validation errors from backend
+                        error_data = response.json()
+                        st.error("**Input Validation Error**")
+                        if "errors" in error_data:
+                            for error in error_data.get("errors", []):
+                                st.error(error)
+                        else:
+                            st.error(error_data.get("detail", "Invalid input provided"))
+                        st.stop()
+                    else:
+                        response.raise_for_status()
+                        response_payload = response.json()
+                        result = response_payload.get("result", "No result returned from backend.")
+                        source_documents = parse_source_documents(response_payload.get("source_documents", []))
 
-                # Compliance Timeline Section
-                st.subheader("Compliance Timeline")
-                if st.session_state.compliance_timeline:
-                    timeline_columns = st.columns(4)
-                    timeline_order = ["Immediate", "Monthly", "Quarterly", "Annual"]
+                        st.session_state.risk_score = parse_risk_level(result)
+                        st.session_state.regulations_by_category = extract_regulations_by_category(result)
+                        st.session_state.compliance_timeline = build_compliance_timeline(result)
+                        st.session_state.latest_business_profile = business_profile
+                        st.session_state.latest_source_documents = source_documents
+                        st.session_state.latest_result_text = result
+                        st.session_state.latest_report_markdown = build_markdown_report(
+                            business_profile,
+                            result,
+                            st.session_state.risk_score,
+                            st.session_state.compliance_timeline,
+                            source_documents,
+                        )
+                        try:
+                            st.session_state.latest_report_pdf = build_pdf_report(
+                                business_profile,
+                                result,
+                                st.session_state.risk_score,
+                                st.session_state.compliance_timeline,
+                                source_documents,
+                            )
+                        except ModuleNotFoundError:
+                            # PDF generation is optional
+                            st.session_state.latest_report_pdf = b""
+                    
+                    st.markdown("---")
+                    st.markdown("## Compliance Analysis Report")
+                    
+                    # Risk Gauge Section
+                    st.subheader("Compliance Risk Assessment")
+                    risk_col1, risk_col2, risk_col3 = st.columns([1, 2, 1])
+                    
+                    with risk_col2:
+                        risk_gauge = get_risk_gauge(st.session_state.risk_score)
+                        st.metric(
+                            "Risk Level",
+                            f"{st.session_state.risk_score}%",
+                            delta=risk_gauge,
+                            delta_color="off"
+                        )
+                        
+                        # Progress bar visualization
+                        st.progress(st.session_state.risk_score / 100)
+                    
+                    st.markdown("---")
 
-                    for column, bucket in zip(timeline_columns, timeline_order):
-                        with column:
-                            items = st.session_state.compliance_timeline.get(bucket, [])
-                            st.markdown(f"**{bucket}**")
-                            if items:
-                                for item in items[:6]:
-                                    checkbox_key = f"timeline_{bucket}_{item[:30]}"
+                    # Compliance Timeline Section
+                    st.subheader("Compliance Timeline")
+                    if st.session_state.compliance_timeline:
+                        timeline_columns = st.columns(4)
+                        timeline_order = ["Immediate", "Monthly", "Quarterly", "Annual"]
+
+                        for column, bucket in zip(timeline_columns, timeline_order):
+                            with column:
+                                items = st.session_state.compliance_timeline.get(bucket, [])
+                                st.markdown(f"**{bucket}**")
+                                if items:
+                                    for item in items[:6]:
+                                        checkbox_key = f"timeline_{bucket}_{item[:30]}"
+                                        checked = st.checkbox(
+                                            item[:90] + ("..." if len(item) > 90 else ""),
+                                            key=checkbox_key,
+                                            value=st.session_state.compliance_checklist.get(checkbox_key, False)
+                                        )
+                                        st.session_state.compliance_checklist[checkbox_key] = checked
+                                    if len(items) > 6:
+                                        st.caption(f"+ {len(items) - 6} more")
+                                else:
+                                    st.caption("No items detected")
+                    else:
+                        st.info("No checklist items were detected for timeline generation.")
+
+                    st.markdown("---")
+
+                    # Downloadable Reports Section
+                    st.subheader("Download Compliance Report")
+                    download_col1, download_col2 = st.columns(2)
+                    file_stamp = datetime.now().strftime("%Y%m%d_%H%M")
+
+                    with download_col1:
+                        st.download_button(
+                            "Download Markdown Report",
+                            data=st.session_state.latest_report_markdown or "",
+                            file_name=f"reglens_compliance_report_{file_stamp}.md",
+                            mime="text/markdown",
+                            use_container_width=True
+                        )
+
+                    with download_col2:
+                        st.download_button(
+                            "Download PDF Report",
+                            data=st.session_state.latest_report_pdf or b"",
+                            file_name=f"reglens_compliance_report_{file_stamp}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+
+                    st.markdown("---")
+                    
+                    # Categorized Regulations Section
+                    if st.session_state.regulations_by_category:
+                        st.subheader("Compliance Checklist by Category")
+                        
+                        for category, regulations in st.session_state.regulations_by_category.items():
+                            with st.expander(f"**{category}** ({len(regulations)} items)", expanded=True):
+                                for idx, regulation in enumerate(regulations[:5]):  # Show first 5
+                                    checkbox_key = f"{category}_{idx}_{regulation[:20]}"
                                     checked = st.checkbox(
-                                        item[:90] + ("..." if len(item) > 90 else ""),
+                                        regulation[:100] + ("..." if len(regulation) > 100 else ""),
                                         key=checkbox_key,
                                         value=st.session_state.compliance_checklist.get(checkbox_key, False)
                                     )
                                     st.session_state.compliance_checklist[checkbox_key] = checked
-                                if len(items) > 6:
-                                    st.caption(f"+ {len(items) - 6} more")
-                            else:
-                                st.caption("No items detected")
-                else:
-                    st.info("No checklist items were detected for timeline generation.")
-
-                st.markdown("---")
-
-                # Downloadable Reports Section
-                st.subheader("Download Compliance Report")
-                download_col1, download_col2 = st.columns(2)
-                file_stamp = datetime.now().strftime("%Y%m%d_%H%M")
-
-                with download_col1:
-                    st.download_button(
-                        "Download Markdown Report",
-                        data=st.session_state.latest_report_markdown or "",
-                        file_name=f"reglens_compliance_report_{file_stamp}.md",
-                        mime="text/markdown",
-                        use_container_width=True
-                    )
-
-                with download_col2:
-                    st.download_button(
-                        "Download PDF Report",
-                        data=st.session_state.latest_report_pdf or b"",
-                        file_name=f"reglens_compliance_report_{file_stamp}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-
-                st.markdown("---")
-                
-                # Categorized Regulations Section
-                if st.session_state.regulations_by_category:
-                    st.subheader("Compliance Checklist by Category")
+                                
+                                if len(regulations) > 5:
+                                    st.caption(f"... and {len(regulations) - 5} more regulations")
                     
-                    for category, regulations in st.session_state.regulations_by_category.items():
-                        with st.expander(f"**{category}** ({len(regulations)} items)", expanded=True):
-                            for idx, regulation in enumerate(regulations[:5]):  # Show first 5
-                                checkbox_key = f"{category}_{idx}_{regulation[:20]}"
-                                checked = st.checkbox(
-                                    regulation[:100] + ("..." if len(regulation) > 100 else ""),
-                                    key=checkbox_key,
-                                    value=st.session_state.compliance_checklist.get(checkbox_key, False)
-                                )
-                                st.session_state.compliance_checklist[checkbox_key] = checked
-                            
-                            if len(regulations) > 5:
-                                st.caption(f"... and {len(regulations) - 5} more regulations")
-                
-                st.markdown("---")
-                
-                # Source Documents Section
-                st.subheader("Source Documents")
-                render_source_documents(st.session_state.latest_source_documents)
+                    st.markdown("---")
+                    
+                    # Source Documents Section
+                    st.subheader("Source Documents")
+                    render_source_documents(st.session_state.latest_source_documents)
 
-                st.markdown("---")
-                
-                # Full Report
-                st.subheader("Detailed Compliance Analysis")
-                st.markdown(result)
-                
-                st.markdown("---")
-                st.success("Analysis complete. This report is based on official government documents only.")
-                st.warning("This tool provides AI-assisted guidance only. Consult a qualified compliance professional for legal decisions.")
+                    st.markdown("---")
+                    
+                    # Full Report
+                    st.subheader("Detailed Compliance Analysis")
+                    st.markdown(result)
+                    
+                    st.markdown("---")
+                    st.success("Analysis complete. This report is based on official government documents only.")
+                    st.warning("This tool provides AI-assisted guidance only. Consult a qualified compliance professional for legal decisions.")
 
-            except requests.exceptions.Timeout:
-                st.error("**Request Timeout**: The server took too long to respond. Please try again.")
-            except requests.exceptions.RequestException as re:
-                st.error(f"**Backend Error**: {str(re)}")
-            except Exception as e:
-                st.error(f"**Error**: {str(e)}")
+                except requests.exceptions.Timeout:
+                    st.error("**Request Timeout**: The server took too long to respond. Please try again.")
+                except requests.exceptions.RequestException as re:
+                    st.error(f"**Backend Error**: {str(re)}")
+                except Exception as e:
+                    st.error(f"**Error**: {str(e)}")
 
-# Display saved analysis if it exists
-if st.session_state.risk_score is not None:
+    # Display saved analysis if it exists
+    if st.session_state.risk_score is not None:
+        st.markdown("---")
+        st.subheader("Your Latest Compliance Dashboard")
+        
+        dashboard_col1, dashboard_col2 = st.columns([1, 2])
+        
+        with dashboard_col1:
+            risk_gauge = get_risk_gauge(st.session_state.risk_score)
+            st.metric("Risk Score", f"{st.session_state.risk_score}%")
+            st.write(risk_gauge)
+        
+        with dashboard_col2:
+            if st.session_state.compliance_checklist:
+                total_items = len(st.session_state.compliance_checklist)
+                checked_items = sum(st.session_state.compliance_checklist.values())
+                progress_pct = (checked_items / total_items * 100) if total_items > 0 else 0
+                st.metric("Progress", f"{int(progress_pct)}%", f"{checked_items}/{total_items} items")
+                st.progress(progress_pct / 100)
+
+    render_audit_history(api_url)
+
+elif active_tab == "Regulatory Updates":
+    st.header("Regulatory Updates")
+    st.markdown("Latest regulatory updates and the regulations detected for your business.")
+    if st.session_state.regulations_by_category:
+        for cat, regs in st.session_state.regulations_by_category.items():
+            with st.expander(f"{cat} ({len(regs)})", expanded=False):
+                for r in regs:
+                    st.markdown(f"- {r}")
+    else:
+        st.info("No regulatory updates available. Run a compliance check to populate regulations.")
+
+elif active_tab == "About":
+    st.header("About RegLens AI")
+    st.markdown("RegLens AI reads official government regulations and provides AI-assisted compliance guidance. Use the 'Compliance Check' to analyze your business and populate regulatory findings.")
     st.markdown("---")
-    st.subheader("Your Latest Compliance Dashboard")
-    
-    dashboard_col1, dashboard_col2 = st.columns([1, 2])
-    
-    with dashboard_col1:
-        risk_gauge = get_risk_gauge(st.session_state.risk_score)
-        st.metric("Risk Score", f"{st.session_state.risk_score}%")
-        st.write(risk_gauge)
-    
-    with dashboard_col2:
-        if st.session_state.compliance_checklist:
-            total_items = len(st.session_state.compliance_checklist)
-            checked_items = sum(st.session_state.compliance_checklist.values())
-            progress_pct = (checked_items / total_items * 100) if total_items > 0 else 0
-            st.metric("Progress", f"{int(progress_pct)}%", f"{checked_items}/{total_items} items")
-            st.progress(progress_pct / 100)
+    st.markdown("Built for FinTechs & MSMEs — RegLens AI helps translate technical regulatory text into actionable steps.")
 
 render_audit_history(api_url)
 
