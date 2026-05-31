@@ -1307,7 +1307,7 @@ elif active_tab == "About":
     st.markdown("---")
     st.markdown("Built for FinTechs & MSMEs — RegLens AI helps translate technical regulatory text into actionable steps.")
 
-render_audit_history(api_url)
+
 
 # Footer
 st.markdown("---")
