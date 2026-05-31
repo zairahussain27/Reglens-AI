@@ -8,7 +8,7 @@ import json
 import requests
 import time
 
-API_URL = "http://localhost:8000"
+API_URL = "https://reglens-backend.onrender.com"
 
 # Test cases
 test_cases = [
