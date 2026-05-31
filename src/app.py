@@ -961,7 +961,7 @@ with st.sidebar:
 
     api_url = st.text_input(
         "Backend API URL",
-        os.getenv("BACKEND_API_URL", "http://localhost:8000")
+        os.getenv("BACKEND_API_URL", "https://reglens-backend.onrender.com")
     )
 
 # Simple top navigation (acts like tabs)
