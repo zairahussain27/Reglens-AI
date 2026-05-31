@@ -63,18 +63,11 @@ def check_vector_store() -> dict:
         "path": chroma_db_path,
         "documents": collection.count(),
     }
-def check_vector_store():
-    return {
-        "status": "disabled",
-        "documents": 0
-    }
 
 def retrieve(query, n_results=5):
     if not isinstance(query, str) or not query.strip():
         logger.warning("Retriever received an empty or invalid query")
         return []
-def retrieve(query, n_results=5):
-    return []
     try:
         n_results = max(1, min(int(n_results), 20))
     except (TypeError, ValueError):
