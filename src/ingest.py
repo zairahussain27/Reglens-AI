@@ -20,7 +20,7 @@ TRUSTED_DOMAINS = [
     "nic.in",
 ]
 
-VECTOR_STORE_DISABLED_REASON = "ChromaDB ingestion is disabled for this deployment."
+VECTOR_STORE_DISABLED_REASON = "Qdrant ingestion is disabled for this deployment."
 
 
 def is_trusted_domain(url):
@@ -66,7 +66,7 @@ def chunk_text(text, chunk_size=500, overlap=50):
 
 
 def ingest_pdf_from_url(pdf_url):
-    """Report that URL ingestion is unavailable while ChromaDB is disabled."""
+    """Report that URL ingestion is unavailable while Qdrant ingestion is disabled."""
     if not is_trusted_pdf_url(pdf_url):
         print(f"Rejected: {pdf_url} - Only HTTPS PDF URLs from trusted government domains are allowed")
     else:
@@ -89,7 +89,7 @@ def ingest_all(folder_path=None):
 
 
 def ingest_all_from_urls(pdf_urls):
-    """Preserve the old update API while making ChromaDB ingestion a no-op."""
+    """Preserve the old update API while making Qdrant ingestion a no-op."""
     total = len(pdf_urls)
     for index, pdf_url in enumerate(pdf_urls, start=1):
         print(f"\n[{index}/{total}] Checking source: {pdf_url}")

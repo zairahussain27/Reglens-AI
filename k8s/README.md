@@ -27,7 +27,7 @@ kubectl apply -f frontend-service.yaml
 
 ## Notes
 - The backend can use `/app/data` for SQLite audit logging.
-- ChromaDB is disabled; the backend uses local keyword retrieval over bundled regulation context.
+- The backend uses Qdrant Cloud for semantic retrieval over regulatory chunks.
 - The backend is served on port `8000`.
 - The frontend is served on port `8501`.
 

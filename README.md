@@ -9,7 +9,7 @@ RegLens AI uses Groq Llama 3.3 to produce an auditable compliance checklist, ris
 - Backend: FastAPI
 - Frontend: Streamlit
 - LLM: Groq API
-- Vector retrieval: Local keyword retrieval over bundled regulation context
+- Vector retrieval: Qdrant Cloud semantic retrieval over regulatory chunks
 - Audit log: SQLite
 - Reports: ReportLab PDF and Markdown
 - Deployment: Docker Compose or Kubernetes
@@ -167,7 +167,7 @@ The GitHub Actions workflow runs tests and builds both Docker images. Test failu
 
 - `.env` or Kubernetes Secret contains a real `GROQ_API_KEY`.
 - `ALLOWED_ORIGINS` contains the deployed frontend origin.
-- `/health` returns HTTP 200 and reports local keyword retrieval as healthy.
+- `/health` returns HTTP 200 and reports Qdrant semantic retrieval as healthy.
 - SQLite audit data is backed by persistent storage when required.
 - Images are tagged with immutable release tags before production deployment.
 - Frontend `BACKEND_API_URL` points to the reachable backend URL for that environment.
