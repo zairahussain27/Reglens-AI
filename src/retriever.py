@@ -98,10 +98,10 @@ def _normalize_payload(payload: Any) -> dict:
         return {}
 
 
-#def retrieve(query: str, n_results: int = 8) -> list[tuple[str, str]]:
+def retrieve(query: str, n_results: int = 8) -> list[tuple[str, str]]:
 #    if not isinstance(query, str) or not query.strip():
 #        logger.warning("Empty query received for retrieval")
-#        return []
+        return []
 #
 #    try:
 #        model = get_embedding_model()
