@@ -46,7 +46,13 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
 }
 /* Remove reserved Streamlit header/chrome space (fixes blank top bar) */
 div[data-testid="stToolbar"],
-div[data-testid="stDecoration"],
+div[data-testid="stDecoration"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
 
 /* Also remove any accidental top padding/margin on main container */
@@ -861,6 +867,37 @@ div[data-testid="stDecoration"],
 #MainMenu,
 footer {
     display: none !important;
+}
+
+.stApp header {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.rl-topbar {
+    background: var(--rl-bg) !important;
+    color: var(--rl-text) !important;
+    position: relative;
+    z-index: 5;
+}
+
+.rl-brand,
+.rl-brand div,
+.rl-nav,
+.rl-nav span,
+.rl-meta,
+.rl-meta span {
+    color: #334155 !important;
+    opacity: 1 !important;
+}
+
+.rl-brand,
+.rl-brand div {
+    color: var(--rl-text) !important;
+}
+
+.rl-nav span.active {
+    color: var(--rl-blue) !important;
 }
 #MainMenu,
 footer {
