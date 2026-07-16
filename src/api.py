@@ -160,10 +160,10 @@ def validate_environment() -> None:
                 raise
 
     # Enforce GROQ API key presence in production
-    groq_key = os.getenv("GROQ_API_KEY")
-    if env == "production" and not groq_key:
-        logger.error("GROQ_API_KEY is required in production environment")
-        raise RuntimeError("Missing GROQ_API_KEY in production environment")
+    # groq_key = os.getenv("GROQ_API_KEY")
+    # if env == "production" and not groq_key:
+    #     logger.error("GROQ_API_KEY is required in production environment")
+    #     raise RuntimeError("Missing GROQ_API_KEY in production environment")
 
 
 def profile_to_dict(profile: BusinessProfile) -> dict:
@@ -222,7 +222,7 @@ def health_check() -> JSONResponse:
 
 
 @app.post("/api/compliance-check", response_model=ComplianceResponse)
-@limiter.limit("10/minute")
+#@limiter.limit("10/minute")
 def compliance_check(request: Request, profile: BusinessProfile) -> JSONResponse:
     profile_data = profile_to_dict(profile)
 
@@ -255,7 +255,7 @@ def compliance_check(request: Request, profile: BusinessProfile) -> JSONResponse
 
 
 @app.get("/api/history", response_model=list[ComplianceHistoryItem])
-@limiter.limit("30/minute")
+#@limiter.limit("30/minute")
 def get_history(request: Request) -> list[ComplianceHistoryItem]:
     try:
         return fetch_recent_requests(limit=50)

@@ -30,8 +30,7 @@ st.set_page_config(
     page_title="RegLens AI",
     page_icon="assets/reglens_logo.png",
     layout="wide",
-
-    
+    initial_sidebar_state="expanded",
 )
 
 from pathlib import Path

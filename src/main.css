@@ -229,22 +229,6 @@ div[data-testid="stDecoration"],
     border: 1px solid var(--rl-blue);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --rl-bg: #0f172a;
-        --rl-card: #111827;
-        --rl-line: #334155;
-        --rl-soft-line: #1f2937;
-        --rl-text: #f8fafc;
-        --rl-muted: #cbd5e1;
-    }
-    .rl-score-ring {
-        background:
-            radial-gradient(circle at center, #111827 0 56%, transparent 57%),
-            conic-gradient(var(--rl-green) var(--score, 0%), #334155 0);
-    }
-    .rl-coverage-item { background: #111827; }
-}
 @media (max-width: 900px) {
     .rl-topbar {
         align-items: flex-start;
@@ -666,22 +650,6 @@ footer,
     border: 1px solid var(--rl-blue);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --rl-bg: #0f172a;
-        --rl-card: #111827;
-        --rl-line: #334155;
-        --rl-soft-line: #1f2937;
-        --rl-text: #f8fafc;
-        --rl-muted: #cbd5e1;
-    }
-    .rl-score-ring {
-        background:
-            radial-gradient(circle at center, #111827 0 56%, transparent 57%),
-            conic-gradient(var(--rl-green) var(--score, 0%), #334155 0);
-    }
-    .rl-coverage-item { background: #111827; }
-}
 @media (max-width: 900px) {
     .rl-topbar {
         align-items: flex-start;
