@@ -919,6 +919,61 @@ section[data-testid="stSidebar"] * {
         width: 18rem !important;
     }
 }
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] li,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"],
+section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] p {
+    color: #0f172a !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.rl-sidebar-panel {
+    color: #0f172a !important;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.rl-sidebar-panel h3 {
+    color: #0f172a !important;
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0.65rem 0 0.5rem;
+}
+
+.rl-sidebar-panel p,
+.rl-sidebar-panel li {
+    color: #334155 !important;
+}
+
+.rl-sidebar-panel ul {
+    margin: 0.4rem 0 0.85rem 1rem;
+    padding: 0;
+}
+
+.rl-sidebar-panel hr {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 1rem 0;
+}
+
+section[data-testid="stSidebar"] input {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+
+section[data-testid="stSidebar"] input::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+}
 #MainMenu,
 footer {
     display: none !important;
