@@ -19,6 +19,14 @@
 section[data-testid="stSidebar"] {
     background-color: #ffffff !important;
     border-right: 1px solid #e5e7eb;
+    display: block !important;
+    visibility: visible !important;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    background-color: #ffffff !important;
+    color: var(--rl-text) !important;
+    display: block !important;
+    visibility: visible !important;
 }
 [data-testid="stSidebarHeader"] {
     min-height: 70px !important;
@@ -450,8 +458,7 @@ label[data-testid="stWidgetLabel"] p {
 div[data-testid="stToolbar"],
 div[data-testid="stDecoration"],
 #MainMenu,
-footer,
-.stApp header {
+footer {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
@@ -852,8 +859,7 @@ label[data-testid="stWidgetLabel"] p {
 div[data-testid="stToolbar"],
 div[data-testid="stDecoration"],
 #MainMenu,
-footer,
-.stApp header {
+footer {
     display: none !important;
 }
 #MainMenu,

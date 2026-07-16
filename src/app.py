@@ -529,7 +529,7 @@ def build_pdf_report(
         fontSize=24,
         spaceAfter=30,
         alignment=1,  # Center alignment
-        textColor=colors.darkblue
+        textColor=colors.HexColor("#0f5bff")
     )
 
     section_style = ParagraphStyle(
@@ -537,7 +537,7 @@ def build_pdf_report(
         parent=styles['Heading2'],
         fontSize=16,
         spaceAfter=15,
-        textColor=colors.darkgreen
+        textColor=colors.HexColor("#16a34a")
     )
 
     normal_style = styles['Normal']
