@@ -898,28 +898,6 @@ footer {
     color: var(--rl-blue) !important;
 }
 
-section[data-testid="stSidebar"],
-section[data-testid="stSidebar"] * {
-    opacity: 1 !important;
-}
-
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-@media (min-width: 901px) {
-    section[data-testid="stSidebar"] {
-        min-width: 18rem !important;
-    }
-
-    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-        width: 18rem !important;
-    }
-}
-
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3,
@@ -933,35 +911,6 @@ section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] p {
     color: #0f172a !important;
     visibility: visible !important;
     opacity: 1 !important;
-}
-
-.rl-sidebar-panel {
-    color: #0f172a !important;
-    font-size: 0.92rem;
-    line-height: 1.5;
-}
-
-.rl-sidebar-panel h3 {
-    color: #0f172a !important;
-    font-size: 1rem;
-    font-weight: 800;
-    margin: 0.65rem 0 0.5rem;
-}
-
-.rl-sidebar-panel p,
-.rl-sidebar-panel li {
-    color: #334155 !important;
-}
-
-.rl-sidebar-panel ul {
-    margin: 0.4rem 0 0.85rem 1rem;
-    padding: 0;
-}
-
-.rl-sidebar-panel hr {
-    border: 0;
-    border-top: 1px solid #e5e7eb;
-    margin: 1rem 0;
 }
 
 section[data-testid="stSidebar"] input {

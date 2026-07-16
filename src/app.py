@@ -1003,30 +1003,31 @@ with top_metrics_slot.container():
 
 # Sidebar (always visible)
 with st.sidebar:
-    st.markdown("""
-    <div class="rl-sidebar-panel">
-        <h3>About RegLens AI</h3>
-        <p>RegLens AI reads real government regulations and tells you exactly:</p>
-        <ul>
-            <li>Which laws apply to your business</li>
-            <li>Why they apply</li>
-            <li>What you must do</li>
-            <li>Your compliance risk level</li>
-        </ul>
-        <hr>
-        <h3>Regulatory Coverage</h3>
-        <ul>
-            <li>RBI KYC & Payment Guidelines</li>
-            <li>NBFC & Digital Lending Rules</li>
-            <li>GST & CGST Rules 2017</li>
-            <li>MSME Udyam Registration</li>
-            <li>Income Tax TDS Provisions</li>
-            <li>FEMA Compliance</li>
-            <li>Companies Act 2013</li>
-        </ul>
-        <hr>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("### About RegLens AI")
+    st.markdown(
+        """
+RegLens AI reads real government regulations and tells you exactly:
+
+- Which laws apply to your business
+- Why they apply
+- What you must do
+- Your compliance risk level
+        """
+    )
+    st.divider()
+    st.markdown("### Regulatory Coverage")
+    st.markdown(
+        """
+- RBI KYC & Payment Guidelines
+- NBFC & Digital Lending Rules
+- GST & CGST Rules 2017
+- MSME Udyam Registration
+- Income Tax TDS Provisions
+- FEMA Compliance
+- Companies Act 2013
+        """
+    )
+    st.divider()
 
     api_url = st.text_input(
         "Backend API URL",
