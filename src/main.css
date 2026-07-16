@@ -19,13 +19,11 @@
 section[data-testid="stSidebar"] {
     background-color: #ffffff !important;
     border-right: 1px solid #e5e7eb;
-    display: block !important;
     visibility: visible !important;
 }
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     background-color: #ffffff !important;
     color: var(--rl-text) !important;
-    display: block !important;
     visibility: visible !important;
 }
 [data-testid="stSidebarHeader"] {
@@ -898,6 +896,28 @@ footer {
 
 .rl-nav span.active {
     color: var(--rl-blue) !important;
+}
+
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] * {
+    opacity: 1 !important;
+}
+
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+@media (min-width: 901px) {
+    section[data-testid="stSidebar"] {
+        min-width: 18rem !important;
+    }
+
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        width: 18rem !important;
+    }
 }
 #MainMenu,
 footer {
