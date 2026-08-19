@@ -6,7 +6,6 @@ AI-powered regulatory compliance assistant for Indian FinTechs and MSMEs.
 RegLens AI uses Groq Llama 3.3 to produce an auditable compliance checklist, risk summary, source documents, and downloadable reports.
 
 ## Stack
-
 - Backend: FastAPI
 - Frontend: Streamlit
 - LLM: Groq API
