@@ -18,9 +18,6 @@ RegLens AI uses Groq Llama 3.3 to produce an auditable compliance checklist, ris
 
 Create `.env` from `.env.example`:
 
-```bash
-cp .env.example .env
-```
 
 Set at least:
 
