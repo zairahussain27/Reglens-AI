@@ -8,6 +8,6 @@
 - [x] 5) Add Kubernetes PVCs for SQLite audit log and Chroma vector store
 - [x] 6) Add ConfigMap/Secret examples for required environment variables
 - [x] 7) Update README with Docker production + Kubernetes usage instructions
-- [ ] 8) Dry-run YAML validation and quick container build checks
+- [x] 8) Dry-run YAML validation and quick container build checks
 
 
